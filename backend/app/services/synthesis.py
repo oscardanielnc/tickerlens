@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from app.providers.base import CompanyProfile, EarningsEvent, NewsItem, Quote
 from app.providers.edgar import Fundamentals
+from app.providers.finnhub import ValuationMetrics
 from app.services.levels import LevelsResult
 from app.services.technical import TechnicalSnapshot
 
@@ -81,6 +82,7 @@ def build_facts(
     earnings: list[EarningsEvent],
     news: list[NewsItem],
     fundamentals: Fundamentals | None = None,
+    valuation: ValuationMetrics | None = None,
 ) -> list[Fact]:
     tech_url = quote.source_url
     facts: list[str | tuple[str, str]] = [
@@ -150,6 +152,21 @@ def build_facts(
                 f"Operating expenses: ${latest.operating_expenses / 1e9:.1f}B"
                 f"{yoy(latest.operating_expenses, year_ago.operating_expenses)}."
             )
+
+    if valuation:
+        ratios = [
+            ("P/E (TTM)", valuation.pe_ttm),
+            ("PEG (TTM)", valuation.peg_ttm),
+            ("P/S (TTM)", valuation.ps_ttm),
+            ("EV/EBITDA (TTM)", valuation.ev_ebitda_ttm),
+            ("P/B", valuation.pb),
+            ("dividend yield %", valuation.dividend_yield_pct),
+            ("ROE %", valuation.roe_pct),
+            ("revenue growth YoY %", valuation.revenue_growth_yoy_pct),
+        ]
+        described = ", ".join(f"{name} {value}" for name, value in ratios if value is not None)
+        if described:
+            facts.append(f"Valuation ratios: {described}.")
 
     result = [
         Fact(ref=f"F{i + 1}", text=text, source_url=tech_url) for i, text in enumerate(facts)

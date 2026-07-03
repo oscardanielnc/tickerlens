@@ -59,6 +59,20 @@ const en = {
   opex: "Operating expenses",
   companyDataTitle: "Company data",
   range52w: "52-week range",
+  valuationTitle: "Valuation & health",
+  hintPe: "Price / earnings per share (trailing 12m). How many years of current profit the price pays for.",
+  hintPeg: "P/E divided by earnings growth. Below 1 often reads as cheap relative to growth.",
+  hintPs: "Price / sales. Useful when there are no profits yet.",
+  hintEvEbitda: "Enterprise value / EBITDA. Valuation including debt — comparable across companies.",
+  hintPb: "Price / book value. Most meaningful for banks and asset-heavy businesses.",
+  hintDivYield: "Annual dividends as % of price.",
+  hintRoe: "Return on equity — profit generated per dollar of shareholders' capital.",
+  hintMargin: "Net profit as % of revenue.",
+  hintGrowth: "Revenue growth vs the same period last year.",
+  divYield: "Dividend yield",
+  roe: "ROE",
+  netMargin: "Net margin",
+  revGrowth: "Revenue growth YoY",
 };
 
 export type Dictionary = { [K in keyof typeof en]: string };
@@ -121,6 +135,20 @@ const es: Dictionary = {
   opex: "Gastos operativos",
   companyDataTitle: "Datos de la empresa",
   range52w: "Rango 52 semanas",
+  valuationTitle: "Valoración y salud",
+  hintPe: "Precio / beneficio por acción (últimos 12m). Cuántos años de beneficio actual paga el precio.",
+  hintPeg: "P/E dividido por el crecimiento del beneficio. Debajo de 1 suele leerse como barato para su crecimiento.",
+  hintPs: "Precio / ventas. Útil cuando aún no hay beneficios.",
+  hintEvEbitda: "Valor de empresa / EBITDA. Valoración incluyendo deuda — comparable entre empresas.",
+  hintPb: "Precio / valor contable. Más relevante en bancos y negocios con muchos activos.",
+  hintDivYield: "Dividendos anuales como % del precio.",
+  hintRoe: "Retorno sobre el capital — beneficio generado por cada dólar de los accionistas.",
+  hintMargin: "Beneficio neto como % de los ingresos.",
+  hintGrowth: "Crecimiento de ingresos vs el mismo periodo del año pasado.",
+  divYield: "Rend. por dividendo",
+  roe: "ROE",
+  netMargin: "Margen neto",
+  revGrowth: "Crec. ingresos YoY",
 };
 
 export const dictionaries: Record<Locale, Dictionary> = { en, es };

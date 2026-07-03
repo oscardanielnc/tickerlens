@@ -20,7 +20,7 @@ from app.core.rate_limit import limiter
 from app.providers.alpaca import AlpacaProvider
 from app.providers.base import Candle, CompanyProfile, EarningsEvent, NewsItem, Quote
 from app.providers.edgar import EdgarProvider, Fundamentals
-from app.providers.finnhub import FinnhubProvider
+from app.providers.finnhub import FinnhubProvider, ValuationMetrics
 from app.services.ai_client import stream_completion
 from app.services.levels import LevelsResult, compute_levels
 from app.services.synthesis import Fact, build_facts, build_prompt
@@ -46,6 +46,7 @@ class AnalysisPayload(BaseModel):
     earnings: list[EarningsEvent]
     news: list[NewsItem]
     fundamentals: Fundamentals | None
+    valuation: ValuationMetrics | None
     facts: list[Fact]  # numbered facts the AI narrative cites
 
 
@@ -70,13 +71,19 @@ async def _build_analysis(ticker: str) -> AnalysisPayload:
         fundamentals = await edgar.get_fundamentals(ticker)
     except HTTPException:
         fundamentals = None  # ETFs and foreign listings have no SEC facts
+    try:
+        valuation = await finnhub.get_valuation(ticker)
+    except HTTPException:
+        valuation = None
 
     try:
         technical = compute_technical(candles, spy)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     levels = compute_levels(candles)
-    facts = build_facts(quote, profile, technical, levels, earnings, news, fundamentals)
+    facts = build_facts(
+        quote, profile, technical, levels, earnings, news, fundamentals, valuation
+    )
 
     return AnalysisPayload(
         ticker=ticker,
@@ -88,6 +95,7 @@ async def _build_analysis(ticker: str) -> AnalysisPayload:
         earnings=earnings,
         news=news,
         fundamentals=fundamentals,
+        valuation=valuation,
         facts=facts,
     )
 

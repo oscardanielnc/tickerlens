@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime, timedelta
 
 import httpx
 from fastapi import HTTPException
+from pydantic import BaseModel
 
 from app.core.config import get_settings
 from app.providers.base import CompanyProfile, EarningsEvent, NewsItem, Quote
@@ -16,6 +17,28 @@ BASE_URL = "https://finnhub.io/api/v1"
 
 def _public_url(ticker: str) -> str:
     return f"https://finnhub.io/quote/{ticker.upper()}"
+
+
+class ValuationMetrics(BaseModel):
+    """Valuation & health ratios an investor checks first (Finnhub /stock/metric).
+
+    Chosen set: P/E (classic earnings multiple), PEG (growth-adjusted, <1 cheap),
+    P/S (works for unprofitable companies), EV/EBITDA (capital-structure neutral),
+    P/B (asset-heavy/banks), dividend yield (shareholder return), plus margin,
+    ROE and revenue growth as health context.
+    """
+
+    pe_ttm: float | None = None
+    peg_ttm: float | None = None
+    ps_ttm: float | None = None
+    pb: float | None = None
+    ev_ebitda_ttm: float | None = None
+    ev_revenue_ttm: float | None = None
+    dividend_yield_pct: float | None = None
+    net_margin_pct: float | None = None
+    roe_pct: float | None = None
+    revenue_growth_yoy_pct: float | None = None
+    source_url: str
 
 
 class FinnhubProvider:
@@ -58,6 +81,28 @@ class FinnhubProvider:
             website=data.get("weburl"),
             market_cap=(data.get("marketCapitalization") or 0) * 1_000_000 or None,
             source_url=data.get("weburl") or _public_url(ticker),
+        )
+
+    async def get_valuation(self, ticker: str) -> ValuationMetrics:
+        data = await self._get("/stock/metric", {"symbol": ticker, "metric": "all"})
+        metric = data.get("metric", {}) if isinstance(data, dict) else {}
+
+        def get(key: str) -> float | None:
+            value = metric.get(key)
+            return round(float(value), 2) if isinstance(value, (int, float)) else None
+
+        return ValuationMetrics(
+            pe_ttm=get("peTTM"),
+            peg_ttm=get("pegTTM"),
+            ps_ttm=get("psTTM"),
+            pb=get("pb"),
+            ev_ebitda_ttm=get("evEbitdaTTM"),
+            ev_revenue_ttm=get("evRevenueTTM"),
+            dividend_yield_pct=get("currentDividendYieldTTM"),
+            net_margin_pct=get("netProfitMarginTTM"),
+            roe_pct=get("roeTTM"),
+            revenue_growth_yoy_pct=get("revenueGrowthTTMYoy"),
+            source_url=_public_url(ticker),
         )
 
     async def get_company_news(self, ticker: str, hours: int = 72) -> list[NewsItem]:

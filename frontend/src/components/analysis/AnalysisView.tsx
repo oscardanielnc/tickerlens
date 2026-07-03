@@ -11,6 +11,7 @@ import { LevelsPanel } from "@/components/analysis/LevelsPanel";
 import { NewsList } from "@/components/analysis/NewsList";
 import { PriceChart } from "@/components/analysis/PriceChart";
 import { TechnicalPanel } from "@/components/analysis/TechnicalPanel";
+import { ValuationCard } from "@/components/analysis/ValuationCard";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ApiError, fetchAnalysis, type AnalysisPayload } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -173,6 +174,7 @@ export function AnalysisView({ ticker }: { ticker: string }) {
                 <TechnicalPanel technical={data.technical} />
               </div>
               <div className="space-y-4">
+                {data.valuation && <ValuationCard valuation={data.valuation} />}
                 <CompanyDataCard data={data} />
                 <LevelsPanel levels={data.levels} />
                 <EarningsCard earnings={data.earnings} />

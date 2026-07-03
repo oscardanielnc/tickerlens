@@ -106,6 +106,20 @@ export interface Fundamentals {
   source_url: string;
 }
 
+export interface ValuationMetrics {
+  pe_ttm: number | null;
+  peg_ttm: number | null;
+  ps_ttm: number | null;
+  pb: number | null;
+  ev_ebitda_ttm: number | null;
+  ev_revenue_ttm: number | null;
+  dividend_yield_pct: number | null;
+  net_margin_pct: number | null;
+  roe_pct: number | null;
+  revenue_growth_yoy_pct: number | null;
+  source_url: string;
+}
+
 export interface Fact {
   ref: string;
   text: string;
@@ -122,6 +136,7 @@ export interface AnalysisPayload {
   earnings: EarningsEvent[];
   news: NewsItem[];
   fundamentals: Fundamentals | null;
+  valuation: ValuationMetrics | null;
   facts: Fact[];
 }
 
