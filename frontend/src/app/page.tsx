@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { LanguageSwitch } from "@/components/LanguageSwitch";
@@ -7,8 +8,8 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function Home() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [ticker, setTicker] = useState("");
-  const [submitted, setSubmitted] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -29,15 +30,12 @@ export default function Home() {
           className="flex w-full max-w-md gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            if (ticker.trim()) setSubmitted(true);
+            if (ticker.trim()) router.push(`/t/${ticker.trim().toUpperCase()}`);
           }}
         >
           <input
             value={ticker}
-            onChange={(e) => {
-              setTicker(e.target.value.toUpperCase());
-              setSubmitted(false);
-            }}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
             placeholder={t.searchPlaceholder}
             className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 font-mono uppercase placeholder:normal-case placeholder:font-sans placeholder:text-zinc-500 focus:border-emerald-400 focus:outline-none"
             maxLength={6}
@@ -49,8 +47,6 @@ export default function Home() {
             {t.searchButton}
           </button>
         </form>
-
-        {submitted && <p className="text-sm text-amber-400">{t.comingSoon}</p>}
       </main>
 
       <footer className="px-6 py-4 text-center text-xs text-zinc-500">

@@ -63,7 +63,7 @@ npm run dev
 ## Roadmap
 
 - [x] Phase 0 — Foundation: monorepo, Docker, CI, provider interfaces
-- [ ] Phase 1 — Ticker analysis page: charts, technical levels, cited AI bull/bear case, earnings, news
+- [x] Phase 1 — Ticker analysis page: charts, technical levels, cited AI bull/bear case, earnings, news
 - [ ] Phase 2 — Save & compare analyses (client-side)
 - [ ] Phase 3 — RAG chat over your analyses (pgvector)
 - [ ] Phase 4 — Eval suite for AI output quality
