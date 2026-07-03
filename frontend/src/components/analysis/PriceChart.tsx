@@ -4,18 +4,7 @@ import { useMemo, useRef, useState } from "react";
 
 import type { Candle, Level } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-
-// Chart chrome tokens (dark surface) from the validated reference palette
-const INK = {
-  price: "#3987e5",
-  priceFill: "rgba(57, 135, 229, 0.12)",
-  support: "#0ca30c",
-  resistance: "#d03b3b",
-  grid: "#2c2c2a",
-  axis: "#383835",
-  muted: "#898781",
-  crosshair: "#c3c2b7",
-};
+import { CHART } from "@/lib/theme";
 
 const WIDTH = 900;
 const HEIGHT = 360;
@@ -31,6 +20,7 @@ export function PriceChart({ candles, supports, resistances }: Props) {
   const { t, locale } = useLanguage();
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Level | null>(null);
 
   const { points, priceToY, indexToX, minPrice, maxPrice, yTicks } = useMemo(() => {
     const closes = candles.map((c) => c.close);
@@ -41,7 +31,7 @@ export function PriceChart({ candles, supports, resistances }: Props) {
     const plotH = HEIGHT - PAD.top - PAD.bottom;
     const toY = (p: number) => PAD.top + plotH - ((p - lo) / (hi - lo)) * plotH;
     const toX = (i: number) => PAD.left + (i / Math.max(1, candles.length - 1)) * plotW;
-    const tickCount = 5;
+    const tickCount = 4;
     const ticks = Array.from(
       { length: tickCount },
       (_, i) => lo + ((hi - lo) * (i + 0.5)) / tickCount,
@@ -71,8 +61,8 @@ export function PriceChart({ candles, supports, resistances }: Props) {
     `L ${indexToX(candles.length - 1)},${HEIGHT - PAD.bottom} L ${indexToX(0)},${HEIGHT - PAD.bottom} Z`;
 
   const levelLines = [
-    ...supports.map((level) => ({ level, color: INK.support, label: t.supportLabel })),
-    ...resistances.map((level) => ({ level, color: INK.resistance, label: t.resistanceLabel })),
+    ...supports.map((level) => ({ level, color: CHART.support, label: t.supportLabel })),
+    ...resistances.map((level) => ({ level, color: CHART.resistance, label: t.resistanceLabel })),
   ].filter(({ level }) => level.price >= minPrice && level.price <= maxPrice);
 
   const dateLabel = (ts: string) =>
@@ -82,12 +72,17 @@ export function PriceChart({ candles, supports, resistances }: Props) {
       year: "numeric",
     });
 
+  const selectedMeta = selected
+    ? levelLines.find(({ level }) => level === selected)
+    : null;
+
   return (
     <figure className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <figcaption className="mb-2 text-sm font-medium text-zinc-300">
-        {t.priceChartTitle}
+      <figcaption className="mb-2 flex items-center justify-between text-sm">
+        <span className="font-medium text-zinc-300">{t.priceChartTitle}</span>
+        <span className="text-xs text-zinc-500">{t.chartClickHint}</span>
       </figcaption>
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -96,6 +91,7 @@ export function PriceChart({ candles, supports, resistances }: Props) {
           aria-label={t.priceChartTitle}
           onMouseMove={handleMove}
           onMouseLeave={() => setHoverIndex(null)}
+          onClick={() => setSelected(null)}
         >
           {/* gridlines + y labels */}
           {yTicks.map((tick) => (
@@ -105,14 +101,14 @@ export function PriceChart({ candles, supports, resistances }: Props) {
                 x2={WIDTH - PAD.right}
                 y1={priceToY(tick)}
                 y2={priceToY(tick)}
-                stroke={INK.grid}
+                stroke={CHART.grid}
                 strokeWidth={1}
               />
               <text
                 x={WIDTH - PAD.right + 6}
                 y={priceToY(tick) + 4}
                 fontSize={11}
-                fill={INK.muted}
+                fill={CHART.muted}
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {tick.toFixed(0)}
@@ -124,53 +120,86 @@ export function PriceChart({ candles, supports, resistances }: Props) {
             x2={WIDTH - PAD.right}
             y1={HEIGHT - PAD.bottom}
             y2={HEIGHT - PAD.bottom}
-            stroke={INK.axis}
+            stroke={CHART.axis}
             strokeWidth={1}
           />
 
           {/* price area + line */}
-          <path d={areaPath} fill={INK.priceFill} />
+          <path d={areaPath} fill={CHART.priceFill} />
           <polyline
             points={points.join(" ")}
             fill="none"
-            stroke={INK.price}
+            stroke={CHART.price}
             strokeWidth={2}
             strokeLinejoin="round"
           />
 
-          {/* support / resistance overlays — dashed, always text-labeled */}
-          {levelLines.map(({ level, color, label }) => (
-            <g key={`${level.kind}-${level.price}`}>
-              <line
-                x1={PAD.left}
-                x2={WIDTH - PAD.right}
-                y1={priceToY(level.price)}
-                y2={priceToY(level.price)}
-                stroke={color}
-                strokeWidth={1.5}
-                strokeDasharray="6 5"
-                opacity={0.3 + level.strength * 0.14}
-              />
-              <text
-                x={PAD.left + 4}
-                y={priceToY(level.price) - 4}
-                fontSize={10.5}
-                fill={color}
-              >
-                {label} {level.price.toFixed(2)} · {level.strength}/5
-              </text>
-            </g>
-          ))}
+          {/* support / resistance lines — clean; click one to inspect */}
+          {levelLines.map(({ level, color }) => {
+            const y = priceToY(level.price);
+            const isSelected = selected === level;
+            return (
+              <g key={`${level.kind}-${level.price}`}>
+                <line
+                  x1={PAD.left}
+                  x2={WIDTH - PAD.right}
+                  y1={y}
+                  y2={y}
+                  stroke={color}
+                  strokeWidth={isSelected ? 2 : 1.25}
+                  strokeDasharray={isSelected ? undefined : "6 5"}
+                  opacity={isSelected ? 1 : 0.55}
+                />
+                {/* invisible wide hit area for easy clicking */}
+                <line
+                  x1={PAD.left}
+                  x2={WIDTH - PAD.right}
+                  y1={y}
+                  y2={y}
+                  stroke="transparent"
+                  strokeWidth={14}
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelected(isSelected ? null : level);
+                  }}
+                />
+              </g>
+            );
+          })}
 
-          {/* crosshair + tooltip */}
-          {hovered && hoverIndex !== null && (
+          {/* selected level info card */}
+          {selected && selectedMeta && (
+            <g pointerEvents="none">
+              <g
+                transform={`translate(${WIDTH - PAD.right - 200}, ${Math.max(
+                  PAD.top,
+                  Math.min(priceToY(selected.price) - 52, HEIGHT - PAD.bottom - 48),
+                )})`}
+              >
+                <rect width={192} height={44} rx={6} fill={CHART.tooltipBg} stroke={CHART.axis} />
+                <circle cx={12} cy={15} r={3.5} fill={selectedMeta.color} />
+                <text x={22} y={19} fontSize={12} fontWeight={600} fill="#ffffff">
+                  {selectedMeta.label} ${selected.price.toFixed(2)}
+                </text>
+                <text x={22} y={34} fontSize={11} fill={CHART.crosshair}>
+                  {selected.distance_percent > 0 ? "+" : ""}
+                  {selected.distance_percent.toFixed(1)}% · {t.strength}{" "}
+                  {selected.strength}/5
+                </text>
+              </g>
+            </g>
+          )}
+
+          {/* crosshair + price tooltip */}
+          {hovered && hoverIndex !== null && !selected && (
             <g pointerEvents="none">
               <line
                 x1={indexToX(hoverIndex)}
                 x2={indexToX(hoverIndex)}
                 y1={PAD.top}
                 y2={HEIGHT - PAD.bottom}
-                stroke={INK.crosshair}
+                stroke={CHART.crosshair}
                 strokeWidth={1}
                 strokeDasharray="3 3"
               />
@@ -178,15 +207,15 @@ export function PriceChart({ candles, supports, resistances }: Props) {
                 cx={indexToX(hoverIndex)}
                 cy={priceToY(hovered.close)}
                 r={4.5}
-                fill={INK.price}
-                stroke="#1a1a19"
+                fill={CHART.price}
+                stroke={CHART.tooltipBg}
                 strokeWidth={2}
               />
               <g
                 transform={`translate(${Math.min(indexToX(hoverIndex) + 10, WIDTH - 190)}, ${PAD.top + 6})`}
               >
-                <rect width={170} height={40} rx={6} fill="#0d0d0d" stroke={INK.axis} />
-                <text x={10} y={17} fontSize={11} fill="#c3c2b7">
+                <rect width={170} height={40} rx={6} fill={CHART.tooltipBg} stroke={CHART.axis} />
+                <text x={10} y={17} fontSize={11} fill={CHART.crosshair}>
                   {dateLabel(hovered.ts)}
                 </text>
                 <text

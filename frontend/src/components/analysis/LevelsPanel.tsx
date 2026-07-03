@@ -2,6 +2,7 @@
 
 import type { LevelsResult } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { CHART } from "@/lib/theme";
 
 function StrengthDots({ strength }: { strength: number }) {
   return (
@@ -23,8 +24,8 @@ export function LevelsPanel({ levels }: { levels: LevelsResult }) {
     ...levels.resistances
       .slice()
       .reverse()
-      .map((level) => ({ level, color: "#e66767", label: t.resistanceLabel })),
-    ...levels.supports.map((level) => ({ level, color: "#0ca30c", label: t.supportLabel })),
+      .map((level) => ({ level, color: CHART.resistance, label: t.resistanceLabel })),
+    ...levels.supports.map((level) => ({ level, color: CHART.support, label: t.supportLabel })),
   ];
 
   return (

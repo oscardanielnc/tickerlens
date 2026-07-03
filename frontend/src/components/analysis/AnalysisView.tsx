@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { AiNarrative } from "@/components/analysis/AiNarrative";
 import { EarningsCard } from "@/components/analysis/EarningsCard";
+import { FundamentalsChart } from "@/components/analysis/FundamentalsChart";
 import { LevelsPanel } from "@/components/analysis/LevelsPanel";
 import { NewsList } from "@/components/analysis/NewsList";
 import { PriceChart } from "@/components/analysis/PriceChart";
@@ -13,12 +14,61 @@ import { TechnicalPanel } from "@/components/analysis/TechnicalPanel";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ApiError, fetchAnalysis, type AnalysisPayload } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { SEMANTIC } from "@/lib/theme";
 
 function formatMarketCap(value: number | null): string {
   if (!value) return "—";
   if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
   if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
   return `$${(value / 1e6).toFixed(0)}M`;
+}
+
+function CompanyDataCard({ data }: { data: AnalysisPayload }) {
+  const { t } = useLanguage();
+  const rows: [string, React.ReactNode][] = [
+    [t.marketCap, formatMarketCap(data.profile.market_cap)],
+    [t.exchange, data.profile.exchange ?? "—"],
+    [t.sector, data.profile.sector ?? "—"],
+    [
+      t.range52w,
+      `$${data.technical.low_52w.toFixed(0)} – $${data.technical.high_52w.toFixed(0)}`,
+    ],
+    [
+      t.website,
+      data.profile.website ? (
+        <a
+          href={data.profile.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-zinc-300"
+        >
+          {new URL(data.profile.website).hostname.replace("www.", "")}
+        </a>
+      ) : (
+        "—"
+      ),
+    ],
+  ];
+  return (
+    <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+      <h2 className="mb-2 text-sm font-medium text-zinc-300">{t.companyDataTitle}</h2>
+      <table className="w-full text-sm">
+        <tbody>
+          {rows.map(([label, value]) => (
+            <tr key={label} className="border-b border-zinc-800/60 last:border-0">
+              <td className="py-1.5 pr-2 text-zinc-500">{label}</td>
+              <td
+                className="py-1.5 text-right text-zinc-200"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {value}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  );
 }
 
 export function AnalysisView({ ticker }: { ticker: string }) {
@@ -98,30 +148,14 @@ export function AnalysisView({ ticker }: { ticker: string }) {
                 ${data.quote.price.toFixed(2)}
               </span>
               <span
-                className={`font-semibold ${
-                  data.quote.change_percent >= 0 ? "text-[#0ca30c]" : "text-[#e66767]"
-                }`}
-                style={{ fontVariantNumeric: "tabular-nums" }}
+                className="font-semibold"
+                style={{
+                  fontVariantNumeric: "tabular-nums",
+                  color: data.quote.change_percent >= 0 ? SEMANTIC.positive : SEMANTIC.negative,
+                }}
               >
                 {data.quote.change_percent >= 0 ? "+" : ""}
                 {data.quote.change_percent.toFixed(2)}%
-              </span>
-              <span className="text-xs text-zinc-500">
-                {t.marketCap} {formatMarketCap(data.profile.market_cap)} · {t.exchange}{" "}
-                {data.profile.exchange ?? "—"}
-                {data.profile.website && (
-                  <>
-                    {" · "}
-                    <a
-                      href={data.profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-zinc-300"
-                    >
-                      {t.website}
-                    </a>
-                  </>
-                )}
               </span>
             </section>
 
@@ -131,12 +165,15 @@ export function AnalysisView({ ticker }: { ticker: string }) {
               resistances={data.levels.resistances}
             />
 
+            {data.fundamentals && <FundamentalsChart fundamentals={data.fundamentals} />}
+
             <div className="grid gap-4 lg:grid-cols-3">
               <div className="space-y-4 lg:col-span-2">
                 <AiNarrative key={locale} ticker={data.ticker} facts={data.facts} />
                 <TechnicalPanel technical={data.technical} />
               </div>
               <div className="space-y-4">
+                <CompanyDataCard data={data} />
                 <LevelsPanel levels={data.levels} />
                 <EarningsCard earnings={data.earnings} />
                 <NewsList news={data.news} />

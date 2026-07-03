@@ -52,6 +52,13 @@ const en = {
   exchange: "Exchange",
   website: "Website",
   sourceLink: "source",
+  chartClickHint: "Click a dashed line to inspect the level",
+  fundamentalsTitle: "Fundamentals by quarter (SEC filings)",
+  revenue: "Revenue",
+  netIncome: "Net income",
+  opex: "Operating expenses",
+  companyDataTitle: "Company data",
+  range52w: "52-week range",
 };
 
 export type Dictionary = { [K in keyof typeof en]: string };
@@ -107,6 +114,13 @@ const es: Dictionary = {
   exchange: "Bolsa",
   website: "Sitio web",
   sourceLink: "fuente",
+  chartClickHint: "Haz clic en una línea punteada para inspeccionar el nivel",
+  fundamentalsTitle: "Fundamentales por trimestre (filings SEC)",
+  revenue: "Ingresos",
+  netIncome: "Beneficio neto",
+  opex: "Gastos operativos",
+  companyDataTitle: "Datos de la empresa",
+  range52w: "Rango 52 semanas",
 };
 
 export const dictionaries: Record<Locale, Dictionary> = { en, es };

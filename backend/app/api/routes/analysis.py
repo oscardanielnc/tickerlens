@@ -19,6 +19,7 @@ from app.core.config import get_settings
 from app.core.rate_limit import limiter
 from app.providers.alpaca import AlpacaProvider
 from app.providers.base import Candle, CompanyProfile, EarningsEvent, NewsItem, Quote
+from app.providers.edgar import EdgarProvider, Fundamentals
 from app.providers.finnhub import FinnhubProvider
 from app.services.ai_client import stream_completion
 from app.services.levels import LevelsResult, compute_levels
@@ -32,6 +33,7 @@ _TICKER_RE = re.compile(r"^[A-Za-z.\-]{1,6}$")
 
 finnhub = FinnhubProvider()
 alpaca = AlpacaProvider()
+edgar = EdgarProvider()
 
 
 class AnalysisPayload(BaseModel):
@@ -43,6 +45,7 @@ class AnalysisPayload(BaseModel):
     levels: LevelsResult
     earnings: list[EarningsEvent]
     news: list[NewsItem]
+    fundamentals: Fundamentals | None
     facts: list[Fact]  # numbered facts the AI narrative cites
 
 
@@ -63,13 +66,17 @@ async def _build_analysis(ticker: str) -> AnalysisPayload:
     news = await finnhub.get_company_news(ticker, hours=72)
     earnings = await finnhub.get_upcoming_earnings(ticker)
     spy = await _spy_candles() if ticker != "SPY" else None
+    try:
+        fundamentals = await edgar.get_fundamentals(ticker)
+    except HTTPException:
+        fundamentals = None  # ETFs and foreign listings have no SEC facts
 
     try:
         technical = compute_technical(candles, spy)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     levels = compute_levels(candles)
-    facts = build_facts(quote, profile, technical, levels, earnings, news)
+    facts = build_facts(quote, profile, technical, levels, earnings, news, fundamentals)
 
     return AnalysisPayload(
         ticker=ticker,
@@ -80,6 +87,7 @@ async def _build_analysis(ticker: str) -> AnalysisPayload:
         levels=levels,
         earnings=earnings,
         news=news,
+        fundamentals=fundamentals,
         facts=facts,
     )
 

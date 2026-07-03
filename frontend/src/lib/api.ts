@@ -90,6 +90,22 @@ export interface NewsItem {
   source_url: string;
 }
 
+export interface FinancialsPeriod {
+  period: string;
+  end_date: string;
+  revenue: number | null;
+  net_income: number | null;
+  gross_profit: number | null;
+  operating_expenses: number | null;
+}
+
+export interface Fundamentals {
+  ticker: string;
+  quarterly: FinancialsPeriod[];
+  annual: FinancialsPeriod[];
+  source_url: string;
+}
+
 export interface Fact {
   ref: string;
   text: string;
@@ -105,6 +121,7 @@ export interface AnalysisPayload {
   levels: LevelsResult;
   earnings: EarningsEvent[];
   news: NewsItem[];
+  fundamentals: Fundamentals | null;
   facts: Fact[];
 }
 
