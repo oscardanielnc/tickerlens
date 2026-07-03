@@ -94,7 +94,8 @@ def build_facts(
     ]
     if technical.rs_vs_spy_3m is not None:
         facts.append(
-            f"3-month performance vs S&P 500 (SPY): {technical.rs_vs_spy_3m:+.2f} percentage points."
+            f"3-month performance vs S&P 500 (SPY): "
+            f"{technical.rs_vs_spy_3m:+.2f} percentage points."
         )
     if levels.supports:
         described = ", ".join(
