@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
+/* Pastel light theme (from the author's `investor` dashboard palette) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f6fa;
+  --card: #ffffff;
+  --soft: #eef1f6;
+  --line: #e7eaf0;
+  --foreground: #222a37;
+  --muted: #7a8595;
+  --accent: #5b8def;
+  --positive: #1faa6b;
+  --negative: #e1576b;
+  --warning: #c8922a;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--card);
+  --color-soft: var(--soft);
+  --color-line: var(--line);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Elevated card, shared by all panels */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 1px 3px rgba(30, 41, 59, 0.06),
+    0 8px 24px rgba(30, 41, 59, 0.05);
 }

@@ -13,7 +13,7 @@ function Inline({ text, facts }: { text: string; facts: Map<string, Fact> }) {
       {parts.map((part, i) => {
         if (part.startsWith("**") && part.endsWith("**")) {
           return (
-            <strong key={i} className="font-semibold text-zinc-100">
+            <strong key={i} className="font-semibold text-foreground">
               {part.slice(2, -2)}
             </strong>
           );
@@ -23,7 +23,7 @@ function Inline({ text, facts }: { text: string; facts: Map<string, Fact> }) {
           const fact = facts.get(marker[1]);
           const chip = (
             <sup
-              className="mx-0.5 rounded bg-zinc-800 px-1 py-0.5 text-[10px] font-medium text-emerald-400"
+              className="mx-0.5 rounded bg-soft px-1 py-0.5 text-[10px] font-medium text-accent"
               title={fact?.text}
             >
               {marker[1]}
@@ -46,11 +46,11 @@ function Inline({ text, facts }: { text: string; facts: Map<string, Fact> }) {
 function Narrative({ markdown, facts }: { markdown: string; facts: Map<string, Fact> }) {
   const blocks = markdown.split("\n").filter((line) => line.trim() !== "");
   return (
-    <div className="space-y-2 text-sm leading-relaxed text-zinc-300">
+    <div className="space-y-2 text-sm leading-relaxed text-foreground/90">
       {blocks.map((line, i) => {
         if (line.startsWith("## ")) {
           return (
-            <h3 key={i} className="pt-2 text-base font-semibold text-zinc-100">
+            <h3 key={i} className="pt-2 text-base font-semibold text-foreground">
               {line.slice(3)}
             </h3>
           );
@@ -58,7 +58,7 @@ function Narrative({ markdown, facts }: { markdown: string; facts: Map<string, F
         if (/^\s*[-*] /.test(line)) {
           return (
             <div key={i} className="flex gap-2 pl-1">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-500" />
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted" />
               <p>
                 <Inline text={line.replace(/^\s*[-*] /, "")} facts={facts} />
               </p>
@@ -105,36 +105,36 @@ export function AiNarrative({ ticker, facts }: { ticker: string; facts: Fact[] }
   }, [ticker, locale]);
 
   return (
-    <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="text-sm font-medium text-zinc-300">{t.aiTitle}</h2>
-      <p className="mb-3 mt-1 text-xs text-zinc-500">{t.aiHint}</p>
+    <section className="panel p-4">
+      <h2 className="text-sm font-medium text-foreground">{t.aiTitle}</h2>
+      <p className="mb-3 mt-1 text-xs text-muted">{t.aiHint}</p>
 
       {status === "error" ? (
-        <p className="text-sm text-amber-400">{error}</p>
+        <p className="text-sm text-warning">{error}</p>
       ) : (
         <>
           <Narrative markdown={text} facts={factMap} />
           {status === "streaming" && (
-            <span className="mt-1 inline-block h-4 w-2 animate-pulse bg-emerald-400" />
+            <span className="mt-1 inline-block h-4 w-2 animate-pulse bg-accent" />
           )}
         </>
       )}
 
-      <details className="mt-4 border-t border-zinc-800 pt-3">
-        <summary className="cursor-pointer text-xs font-medium text-zinc-400">
+      <details className="mt-4 border-t border-line pt-3">
+        <summary className="cursor-pointer text-xs font-medium text-muted">
           {t.aiSourcesTitle}
         </summary>
-        <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+        <ul className="mt-2 space-y-1 text-xs text-muted">
           {facts.map((fact) => (
             <li key={fact.ref}>
-              <span className="mr-1 font-mono text-emerald-500">{fact.ref}</span>
+              <span className="mr-1 font-mono text-accent">{fact.ref}</span>
               {fact.text}{" "}
               {fact.source_url && (
                 <a
                   href={fact.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-zinc-400 underline"
+                  className="text-foreground/70 underline"
                 >
                   {t.sourceLink}
                 </a>

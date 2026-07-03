@@ -10,7 +10,7 @@ function StrengthDots({ strength }: { strength: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}
-          className={`h-1.5 w-1.5 rounded-full ${i < strength ? "bg-zinc-300" : "bg-zinc-700"}`}
+          className={`h-1.5 w-1.5 rounded-full ${i < strength ? "bg-muted" : "bg-line"}`}
         />
       ))}
     </span>
@@ -29,24 +29,24 @@ export function LevelsPanel({ levels }: { levels: LevelsResult }) {
   ];
 
   return (
-    <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="mb-3 text-sm font-medium text-zinc-300">{t.levelsTitle}</h2>
+    <section className="panel p-4">
+      <h2 className="mb-3 text-sm font-medium text-foreground">{t.levelsTitle}</h2>
       <table className="w-full text-sm">
         <tbody>
           {rows.map(({ level, color, label }) => (
-            <tr key={`${level.kind}-${level.price}`} className="border-b border-zinc-800/60">
+            <tr key={`${level.kind}-${level.price}`} className="border-b border-line">
               <td className="py-1.5 pr-2">
                 <span className="mr-2 inline-block h-2 w-2 rounded-full" style={{ background: color }} />
-                <span className="text-zinc-400">{label}</span>
+                <span className="text-muted">{label}</span>
               </td>
               <td
-                className="py-1.5 pr-2 text-right font-semibold text-zinc-100"
+                className="py-1.5 pr-2 text-right font-semibold text-foreground"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 ${level.price.toFixed(2)}
               </td>
               <td
-                className="py-1.5 pr-2 text-right text-zinc-500"
+                className="py-1.5 pr-2 text-right text-muted"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {level.distance_percent > 0 ? "+" : ""}
@@ -60,17 +60,17 @@ export function LevelsPanel({ levels }: { levels: LevelsResult }) {
         </tbody>
       </table>
       {levels.suggested_entry !== null && (
-        <div className="mt-3 rounded-lg border border-emerald-900/60 bg-emerald-950/30 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-wide text-emerald-500">
+        <div className="mt-3 rounded-lg bg-[#dcf3e8] px-3 py-2">
+          <div className="text-[11px] uppercase tracking-wide text-positive">
             {t.suggestedEntry}
           </div>
           <div
-            className="font-semibold text-emerald-300"
+            className="font-semibold text-[#1d7a52]"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
             ${levels.suggested_entry.toFixed(2)}
           </div>
-          <div className="mt-0.5 text-xs text-zinc-500">{t.suggestedEntryHint}</div>
+          <div className="mt-0.5 text-xs text-muted">{t.suggestedEntryHint}</div>
         </div>
       )}
     </section>

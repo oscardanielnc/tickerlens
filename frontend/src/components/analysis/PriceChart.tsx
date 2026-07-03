@@ -77,10 +77,10 @@ export function PriceChart({ candles, supports, resistances }: Props) {
     : null;
 
   return (
-    <figure className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+    <figure className="panel p-4">
       <figcaption className="mb-2 flex items-center justify-between text-sm">
-        <span className="font-medium text-zinc-300">{t.priceChartTitle}</span>
-        <span className="text-xs text-zinc-500">{t.chartClickHint}</span>
+        <span className="font-medium text-foreground">{t.priceChartTitle}</span>
+        <span className="text-xs text-muted">{t.chartClickHint}</span>
       </figcaption>
       <div className="relative overflow-x-auto">
         <svg
@@ -179,10 +179,10 @@ export function PriceChart({ candles, supports, resistances }: Props) {
               >
                 <rect width={192} height={44} rx={6} fill={CHART.tooltipBg} stroke={CHART.axis} />
                 <circle cx={12} cy={15} r={3.5} fill={selectedMeta.color} />
-                <text x={22} y={19} fontSize={12} fontWeight={600} fill="#ffffff">
+                <text x={22} y={19} fontSize={12} fontWeight={600} fill={CHART.tooltipText}>
                   {selectedMeta.label} ${selected.price.toFixed(2)}
                 </text>
-                <text x={22} y={34} fontSize={11} fill={CHART.crosshair}>
+                <text x={22} y={34} fontSize={11} fill={CHART.tooltipMuted}>
                   {selected.distance_percent > 0 ? "+" : ""}
                   {selected.distance_percent.toFixed(1)}% · {t.strength}{" "}
                   {selected.strength}/5
@@ -215,7 +215,7 @@ export function PriceChart({ candles, supports, resistances }: Props) {
                 transform={`translate(${Math.min(indexToX(hoverIndex) + 10, WIDTH - 190)}, ${PAD.top + 6})`}
               >
                 <rect width={170} height={40} rx={6} fill={CHART.tooltipBg} stroke={CHART.axis} />
-                <text x={10} y={17} fontSize={11} fill={CHART.crosshair}>
+                <text x={10} y={17} fontSize={11} fill={CHART.tooltipMuted}>
                   {dateLabel(hovered.ts)}
                 </text>
                 <text
@@ -223,7 +223,7 @@ export function PriceChart({ candles, supports, resistances }: Props) {
                   y={32}
                   fontSize={12}
                   fontWeight={600}
-                  fill="#ffffff"
+                  fill={CHART.tooltipText}
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   ${hovered.close.toFixed(2)}

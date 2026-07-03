@@ -18,12 +18,12 @@ function Tile({
   const color =
     accent === "up" ? SEMANTIC.positive : accent === "down" ? SEMANTIC.negative : undefined;
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2.5">
-      <div className="text-[11px] uppercase tracking-wide text-zinc-500">{label}</div>
-      <div className="mt-0.5 font-semibold text-zinc-100" style={color ? { color } : undefined}>
+    <div className="rounded-lg bg-soft px-3 py-2.5">
+      <div className="text-[11px] uppercase tracking-wide text-muted">{label}</div>
+      <div className="mt-0.5 font-semibold text-foreground" style={color ? { color } : undefined}>
         {value}
       </div>
-      {detail && <div className="text-xs text-zinc-500">{detail}</div>}
+      {detail && <div className="text-xs text-muted">{detail}</div>}
     </div>
   );
 }
@@ -46,8 +46,8 @@ export function TechnicalPanel({ technical }: { technical: TechnicalSnapshot }) 
   ];
 
   return (
-    <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="mb-3 text-sm font-medium text-zinc-300">{t.technicalTitle}</h2>
+    <section className="panel p-4">
+      <h2 className="mb-3 text-sm font-medium text-foreground">{t.technicalTitle}</h2>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Tile
           label={t.trend}

@@ -50,15 +50,15 @@ function CompanyDataCard({ data }: { data: AnalysisPayload }) {
     ],
   ];
   return (
-    <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <h2 className="mb-2 text-sm font-medium text-zinc-300">{t.companyDataTitle}</h2>
+    <section className="panel p-4">
+      <h2 className="mb-2 text-sm font-medium text-foreground">{t.companyDataTitle}</h2>
       <table className="w-full text-sm">
         <tbody>
           {rows.map(([label, value]) => (
-            <tr key={label} className="border-b border-zinc-800/60 last:border-0">
-              <td className="py-1.5 pr-2 text-zinc-500">{label}</td>
+            <tr key={label} className="border-b border-line last:border-0">
+              <td className="py-1.5 pr-2 text-muted">{label}</td>
               <td
-                className="py-1.5 text-right text-zinc-200"
+                className="py-1.5 text-right text-foreground"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {value}
@@ -96,9 +96,9 @@ export function AnalysisView({ ticker }: { ticker: string }) {
 
   return (
     <div className="min-h-screen">
-      <header className="flex flex-wrap items-center gap-4 border-b border-zinc-800 px-6 py-3">
+      <header className="flex flex-wrap items-center gap-4 border-b border-line bg-card px-6 py-3">
         <Link href="/" className="text-lg font-semibold tracking-tight">
-          Ticker<span className="text-emerald-400">Lens</span>
+          Ticker<span className="text-accent">Lens</span>
         </Link>
         <form
           className="flex flex-1 justify-center"
@@ -111,7 +111,7 @@ export function AnalysisView({ ticker }: { ticker: string }) {
             value={search}
             onChange={(e) => setSearch(e.target.value.toUpperCase())}
             placeholder={t.searchPlaceholder}
-            className="w-full max-w-xs rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans placeholder:text-zinc-500 focus:border-emerald-400 focus:outline-none"
+            className="w-full max-w-xs rounded-lg border border-line bg-background px-3 py-1.5 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans placeholder:text-muted focus:border-accent focus:outline-none"
             maxLength={6}
           />
         </form>
@@ -120,17 +120,17 @@ export function AnalysisView({ ticker }: { ticker: string }) {
 
       <main className="mx-auto max-w-6xl space-y-4 px-4 py-6">
         {error && (
-          <div className="rounded-xl border border-amber-900/60 bg-amber-950/20 p-6 text-center">
-            <p className="text-amber-300">{error}</p>
-            <Link href="/" className="mt-2 inline-block text-sm text-zinc-400 underline">
+          <div className="rounded-xl border border-[#f0dcb4] bg-[#fbf0d8] p-6 text-center">
+            <p className="text-warning">{error}</p>
+            <Link href="/" className="mt-2 inline-block text-sm text-muted underline">
               {t.backToSearch}
             </Link>
           </div>
         )}
 
         {!data && !error && (
-          <div className="flex flex-col items-center gap-3 py-24 text-zinc-500">
-            <span className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-emerald-400" />
+          <div className="flex flex-col items-center gap-3 py-24 text-muted">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
             {t.loading}
           </div>
         )}
@@ -140,7 +140,7 @@ export function AnalysisView({ ticker }: { ticker: string }) {
             {/* Quote header */}
             <section className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <h1 className="text-2xl font-bold">{data.profile.name}</h1>
-              <span className="font-mono text-zinc-500">{data.ticker}</span>
+              <span className="font-mono text-muted">{data.ticker}</span>
               <span
                 className="text-2xl font-semibold"
                 style={{ fontVariantNumeric: "tabular-nums" }}
@@ -183,7 +183,7 @@ export function AnalysisView({ ticker }: { ticker: string }) {
         )}
       </main>
 
-      <footer className="px-6 py-4 text-center text-xs text-zinc-500">
+      <footer className="px-6 py-4 text-center text-xs text-muted">
         <p className="mx-auto max-w-2xl">⚠️ {t.disclaimer}</p>
       </footer>
     </div>

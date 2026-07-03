@@ -1,25 +1,31 @@
 /**
  * Central visual tokens for charts and semantic accents.
- * Palette style: soft pastels (matching the author's kepler/investor projects).
- * Values are swapped in one place — components reference roles, never raw hex.
+ * Pastel light palette taken from the author's `investor` dashboard
+ * (bg #f5f6fa, white cards, desaturated green/red, soft blue accent).
+ * Components reference roles, never raw hex.
  */
 export const CHART = {
-  price: "#8ab8e8", // pastel blue — price line
-  priceFill: "rgba(138, 184, 232, 0.10)",
-  support: "#8fd4a8", // pastel green
-  resistance: "#f2a0a0", // pastel red
-  grid: "#2c2c2a",
-  axis: "#383835",
-  muted: "#898781",
-  crosshair: "#c3c2b7",
-  tooltipBg: "#101012",
-  revenue: "#8ab8e8", // series 1 — pastel blue
-  netIncome: "#8fd4a8", // series 2 — pastel green
-  opex: "#e8c98a", // series 3 — pastel amber
+  price: "#5b8def", // soft blue — price line (investor accent)
+  priceFill: "rgba(91, 141, 239, 0.10)",
+  support: "#1faa6b", // pastel green
+  resistance: "#e1576b", // pastel red
+  grid: "#eef1f6",
+  axis: "#e7eaf0",
+  muted: "#7a8595",
+  crosshair: "#7a8595",
+  tooltipBg: "#ffffff",
+  tooltipText: "#222a37",
+  tooltipMuted: "#7a8595",
+  revenue: "#aecbfa", // pastel blue tint (investor sector palette)
+  revenueText: "#2f5fb0",
+  netIncome: "#b7e1cd", // pastel green tint
+  netIncomeText: "#1d7a52",
+  opex: "#fce4b3", // pastel amber tint
+  opexText: "#9a6b15",
 };
 
 export const SEMANTIC = {
-  positive: "#8fd4a8",
-  negative: "#f2a0a0",
-  warning: "#e8c98a",
+  positive: "#1faa6b",
+  negative: "#e1576b",
+  warning: "#c8922a",
 };

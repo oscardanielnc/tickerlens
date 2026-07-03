@@ -45,10 +45,10 @@ export function FundamentalsChart({ fundamentals }: { fundamentals: Fundamentals
   const hovered = hoverIdx !== null ? quarters[hoverIdx] : null;
 
   return (
-    <figure className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+    <figure className="panel p-4">
       <figcaption className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className="font-medium text-zinc-300">{t.fundamentalsTitle}</span>
-        <span className="flex items-center gap-3 text-xs text-zinc-400">
+        <span className="font-medium text-foreground">{t.fundamentalsTitle}</span>
+        <span className="flex items-center gap-3 text-xs text-muted">
           {series.map((s) => (
             <span key={s.key} className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
@@ -59,7 +59,7 @@ export function FundamentalsChart({ fundamentals }: { fundamentals: Fundamentals
             href={fundamentals.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-500 underline hover:text-zinc-300"
+            className="text-muted underline hover:text-foreground"
           >
             SEC EDGAR
           </a>
@@ -119,7 +119,7 @@ export function FundamentalsChart({ fundamentals }: { fundamentals: Fundamentals
                   y={PAD.top}
                   width={groupW}
                   height={plotH}
-                  fill={hoverIdx === qi ? "rgba(255,255,255,0.03)" : "transparent"}
+                  fill={hoverIdx === qi ? "rgba(30,41,59,0.04)" : "transparent"}
                   onMouseEnter={() => setHoverIdx(qi)}
                 />
                 {series.map((s, si) => {
@@ -169,7 +169,7 @@ export function FundamentalsChart({ fundamentals }: { fundamentals: Fundamentals
                   fill={CHART.tooltipBg}
                   stroke={CHART.axis}
                 />
-                <text x={10} y={14} fontSize={11} fontWeight={600} fill="#ffffff">
+                <text x={10} y={14} fontSize={11} fontWeight={600} fill={CHART.tooltipText}>
                   {hovered.period}
                 </text>
                 {series.map((s, si) => (
@@ -179,7 +179,7 @@ export function FundamentalsChart({ fundamentals }: { fundamentals: Fundamentals
                       x={24}
                       y={30 + si * 15}
                       fontSize={11}
-                      fill={CHART.crosshair}
+                      fill={CHART.tooltipMuted}
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {s.label}: {hovered[s.key] != null ? `$${formatB(hovered[s.key]!)}` : "—"}
