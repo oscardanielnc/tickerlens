@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     ai_engine: str = "deepseek"
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com"
-    ai_model_strong: str = "deepseek-reasoner"  # analysis synthesis
+    ai_model_strong: str = "deepseek-chat"  # analysis synthesis (fast streaming for the demo)
     ai_model_cheap: str = "deepseek-chat"  # translations, short summaries
 
     # Cache freshness (seconds) — protects provider rate limits and AI spend

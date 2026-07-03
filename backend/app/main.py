@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.api.routes import health
+from app.api.routes import analysis, health
 from app.core.config import get_settings
 from app.core.rate_limit import limiter
 
@@ -37,3 +37,4 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api")
+app.include_router(analysis.router, prefix="/api")
