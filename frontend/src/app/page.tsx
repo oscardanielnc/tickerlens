@@ -1,0 +1,67 @@
+"use client";
+
+import { useState } from "react";
+
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+
+export default function Home() {
+  const { t } = useLanguage();
+  const [ticker, setTicker] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="flex items-center justify-between px-6 py-4">
+        <span className="text-lg font-semibold tracking-tight">
+          Ticker<span className="text-emerald-400">Lens</span>
+        </span>
+        <LanguageSwitch />
+      </header>
+
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+        <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
+          Ticker<span className="text-emerald-400">Lens</span>
+        </h1>
+        <p className="max-w-xl text-lg text-zinc-400">{t.tagline}</p>
+
+        <form
+          className="flex w-full max-w-md gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (ticker.trim()) setSubmitted(true);
+          }}
+        >
+          <input
+            value={ticker}
+            onChange={(e) => {
+              setTicker(e.target.value.toUpperCase());
+              setSubmitted(false);
+            }}
+            placeholder={t.searchPlaceholder}
+            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 font-mono uppercase placeholder:normal-case placeholder:font-sans placeholder:text-zinc-500 focus:border-emerald-400 focus:outline-none"
+            maxLength={6}
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-zinc-950 transition-colors hover:bg-emerald-400"
+          >
+            {t.searchButton}
+          </button>
+        </form>
+
+        {submitted && <p className="text-sm text-amber-400">{t.comingSoon}</p>}
+      </main>
+
+      <footer className="px-6 py-4 text-center text-xs text-zinc-500">
+        <p className="mx-auto max-w-2xl">⚠️ {t.disclaimer}</p>
+        <a
+          href="https://github.com"
+          className="mt-2 inline-block underline hover:text-zinc-300"
+        >
+          {t.footerSource}
+        </a>
+      </footer>
+    </div>
+  );
+}
