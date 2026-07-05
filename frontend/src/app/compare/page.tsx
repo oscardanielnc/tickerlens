@@ -1,0 +1,18 @@
+import { CompareView } from "@/components/compare/CompareView";
+
+export default async function ComparePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ t?: string }>;
+}) {
+  const { t } = await searchParams;
+  const tickers = [
+    ...new Set(
+      (t ?? "")
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter((s) => /^[A-Z.]{1,6}$/.test(s)),
+    ),
+  ].slice(0, 4);
+  return <CompareView key={tickers.join(",")} tickers={tickers} />;
+}

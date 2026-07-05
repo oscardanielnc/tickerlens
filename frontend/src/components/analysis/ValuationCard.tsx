@@ -4,18 +4,11 @@ import type { ValuationMetrics } from "@/lib/api";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { SEMANTIC } from "@/lib/theme";
-
-type Verdict = "good" | "bad" | null;
+import { judges, type Verdict } from "@/lib/verdict";
 
 function fmt(value: number | null, suffix = ""): string {
   if (value == null) return "—";
   return `${value.toFixed(value >= 100 ? 0 : 2)}${suffix}`;
-}
-
-/** Code-computed traffic light per ratio: lowBetter = green below `good`, red above `bad`. */
-function judge(value: number, good: number, bad: number, lowBetter: boolean): Verdict {
-  if (lowBetter) return value <= good ? "good" : value >= bad ? "bad" : null;
-  return value >= good ? "good" : value <= bad ? "bad" : null;
 }
 
 interface Row {
@@ -50,7 +43,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       "P/E",
       v.pe_ttm,
       t.hintPe,
-      v.pe_ttm != null ? judge(v.pe_ttm, 20, 40, true) : null,
+      v.pe_ttm != null ? judges.pe(v.pe_ttm) : null,
       t.vGoodPe,
       t.vBadPe,
     ),
@@ -58,7 +51,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       "PEG",
       v.peg_ttm,
       t.hintPeg,
-      v.peg_ttm != null ? judge(v.peg_ttm, 1, 2, true) : null,
+      v.peg_ttm != null ? judges.peg(v.peg_ttm) : null,
       t.vGoodPeg,
       t.vBadPeg,
     ),
@@ -66,7 +59,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       "P/S",
       v.ps_ttm,
       t.hintPs,
-      v.ps_ttm != null ? judge(v.ps_ttm, 2, 10, true) : null,
+      v.ps_ttm != null ? judges.ps(v.ps_ttm) : null,
       t.vGoodPs,
       t.vBadPs,
     ),
@@ -74,7 +67,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       "EV/EBITDA",
       v.ev_ebitda_ttm,
       t.hintEvEbitda,
-      v.ev_ebitda_ttm != null ? judge(v.ev_ebitda_ttm, 10, 20, true) : null,
+      v.ev_ebitda_ttm != null ? judges.evEbitda(v.ev_ebitda_ttm) : null,
       t.vGoodEv,
       t.vBadEv,
     ),
@@ -82,7 +75,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       "P/B",
       v.pb,
       t.hintPb,
-      v.pb != null ? judge(v.pb, 1.5, 10, true) : null,
+      v.pb != null ? judges.pb(v.pb) : null,
       t.vGoodPb,
       t.vBadPb,
     ),
@@ -90,8 +83,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       t.divYield,
       v.dividend_yield_pct,
       t.hintDivYield,
-      // No dividend isn't a red flag (growth companies reinvest), so never "bad"
-      v.dividend_yield_pct != null && v.dividend_yield_pct >= 3 ? "good" : null,
+      v.dividend_yield_pct != null ? judges.divYield(v.dividend_yield_pct) : null,
       t.vGoodDiv,
       "",
       "%",
@@ -100,7 +92,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       t.roe,
       v.roe_pct,
       t.hintRoe,
-      v.roe_pct != null ? judge(v.roe_pct, 15, 5, false) : null,
+      v.roe_pct != null ? judges.roe(v.roe_pct) : null,
       t.vGoodRoe,
       t.vBadRoe,
       "%",
@@ -109,7 +101,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       t.netMargin,
       v.net_margin_pct,
       t.hintMargin,
-      v.net_margin_pct != null ? judge(v.net_margin_pct, 20, 5, false) : null,
+      v.net_margin_pct != null ? judges.margin(v.net_margin_pct) : null,
       t.vGoodMargin,
       t.vBadMargin,
       "%",
@@ -118,7 +110,7 @@ function buildRows(v: ValuationMetrics, t: Dictionary): Row[] {
       t.revGrowth,
       v.revenue_growth_yoy_pct,
       t.hintGrowth,
-      v.revenue_growth_yoy_pct != null ? judge(v.revenue_growth_yoy_pct, 10, 0, false) : null,
+      v.revenue_growth_yoy_pct != null ? judges.growth(v.revenue_growth_yoy_pct) : null,
       t.vGoodGrowth,
       t.vBadGrowth,
       "%",

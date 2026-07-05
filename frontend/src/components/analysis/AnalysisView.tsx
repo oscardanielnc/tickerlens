@@ -14,14 +14,28 @@ import { TechnicalPanel } from "@/components/analysis/TechnicalPanel";
 import { ValuationCard } from "@/components/analysis/ValuationCard";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ApiError, fetchAnalysis, type AnalysisPayload } from "@/lib/api";
+import { formatMarketCap } from "@/lib/format";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { removeTicker, saveTicker, snapshotFrom, useSavedTickers } from "@/lib/storage";
 import { SEMANTIC } from "@/lib/theme";
 
-function formatMarketCap(value: number | null): string {
-  if (!value) return "—";
-  if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
-  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-  return `$${(value / 1e6).toFixed(0)}M`;
+function SaveButton({ data }: { data: AnalysisPayload }) {
+  const { t } = useLanguage();
+  const saved = useSavedTickers();
+  const isSaved = saved.some((s) => s.ticker === data.ticker);
+  return (
+    <button
+      type="button"
+      onClick={() => (isSaved ? removeTicker(data.ticker) : saveTicker(snapshotFrom(data)))}
+      className={`ml-auto rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+        isSaved
+          ? "border-positive/30 bg-[#dcf3e8] text-positive"
+          : "border-line bg-card text-muted hover:border-accent hover:text-accent"
+      }`}
+    >
+      {isSaved ? `✓ ${t.savedTicker}` : `💾 ${t.saveTicker}`}
+    </button>
+  );
 }
 
 function CompanyDataCard({ data }: { data: AnalysisPayload }) {
@@ -158,6 +172,7 @@ export function AnalysisView({ ticker }: { ticker: string }) {
                 {data.quote.change_percent >= 0 ? "+" : ""}
                 {data.quote.change_percent.toFixed(2)}%
               </span>
+              <SaveButton data={data} />
             </section>
 
             <PriceChart

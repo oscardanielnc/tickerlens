@@ -90,6 +90,19 @@ const en = {
   vBadMargin: "🔴 Below 5% (or negative): thin profitability, vulnerable to shocks.",
   vGoodGrowth: "🟢 Above 10% YoY: healthy expansion.",
   vBadGrowth: "🔴 Negative: sales are shrinking vs last year.",
+  saveTicker: "Save",
+  savedTicker: "Saved",
+  savedTitle: "Saved tickers",
+  savedHint: "Stored only in this browser — nothing leaves your device.",
+  savedOn: "Saved",
+  removeLabel: "Remove",
+  compareCta: "Compare",
+  compareSelectHint: "Select 2–4 tickers to compare",
+  compareTitle: "Ticker comparison",
+  compareTooFew: "Pick at least two tickers to compare, e.g. /compare?t=NVDA,AAPL",
+  compareFailed: "Could not load",
+  priceLabel: "Price",
+  dayChange: "Day change",
 };
 
 export type Dictionary = { [K in keyof typeof en]: string };
@@ -183,6 +196,19 @@ const es: Dictionary = {
   vBadMargin: "🔴 Menos de 5% (o negativo): rentabilidad frágil, vulnerable a shocks.",
   vGoodGrowth: "🟢 Más de 10% interanual: expansión sana.",
   vBadGrowth: "🔴 Negativo: las ventas se contraen frente al año pasado.",
+  saveTicker: "Guardar",
+  savedTicker: "Guardado",
+  savedTitle: "Tickers guardados",
+  savedHint: "Se guarda solo en este navegador — nada sale de tu dispositivo.",
+  savedOn: "Guardado",
+  removeLabel: "Quitar",
+  compareCta: "Comparar",
+  compareSelectHint: "Elige 2–4 tickers para comparar",
+  compareTitle: "Comparativa de tickers",
+  compareTooFew: "Elige al menos dos tickers para comparar, ej. /compare?t=NVDA,AAPL",
+  compareFailed: "No se pudo cargar",
+  priceLabel: "Precio",
+  dayChange: "Cambio del día",
 };
 
 export const dictionaries: Record<Locale, Dictionary> = { en, es };

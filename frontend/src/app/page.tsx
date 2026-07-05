@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { SavedTickers } from "@/components/SavedTickers";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function Home() {
@@ -47,6 +48,8 @@ export default function Home() {
             {t.searchButton}
           </button>
         </form>
+
+        <SavedTickers />
       </main>
 
       <footer className="px-6 py-4 text-center text-xs text-muted">

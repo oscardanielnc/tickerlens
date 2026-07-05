@@ -66,7 +66,7 @@ npm run dev
 
 - [x] Phase 0 — Foundation: monorepo, Docker, CI, provider interfaces
 - [x] Phase 1 — Ticker analysis page: charts, technical levels, cited AI bull/bear case, earnings, news
-- [ ] Phase 2 — Save & compare analyses (client-side)
+- [x] Phase 2 — Save & compare tickers side by side (localStorage, nothing leaves the browser)
 - [ ] Phase 3 — RAG chat over your analyses (pgvector)
 - [ ] Phase 4 — Eval suite for AI output quality
 
