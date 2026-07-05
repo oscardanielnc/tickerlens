@@ -52,7 +52,7 @@ export default function Home() {
       <footer className="px-6 py-4 text-center text-xs text-muted">
         <p className="mx-auto max-w-2xl">⚠️ {t.disclaimer}</p>
         <a
-          href="https://github.com"
+          href="https://github.com/oscardanielnc/tickerlens"
           className="mt-2 inline-block underline hover:text-foreground"
         >
           {t.footerSource}

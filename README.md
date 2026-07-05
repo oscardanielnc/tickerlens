@@ -25,6 +25,8 @@ Type a ticker (e.g. `NVDA`) and get a live, cited analysis: company profile, fin
 ## Quick start
 
 ```bash
+git clone https://github.com/oscardanielnc/tickerlens.git
+cd tickerlens
 cp .env.example .env   # add your API keys (Finnhub free tier is enough to start)
 docker compose up --build
 ```
