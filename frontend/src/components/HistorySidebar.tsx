@@ -9,6 +9,9 @@ import { HISTORY_LIMIT, removeTicker, useSavedTickers } from "@/lib/storage";
 
 const TREND_ICON = { uptrend: "📈", downtrend: "📉", sideways: "➡️" } as const;
 
+/** A comparison is head to head — exactly two tickers, never more. */
+const COMPARE_SIZE = 2;
+
 /**
  * Left rail with the last searches (localStorage only), shared by every route.
  * Two tickers can be picked from it to open the comparison view.
@@ -22,11 +25,15 @@ export function HistorySidebar() {
   const current = segments[0] === "t" ? segments[1]?.toUpperCase() : undefined;
   const [selected, setSelected] = useState<string[]>([]);
 
+  /** Picking a third ticker drops the oldest, so the pair is always the last two
+   *  clicked — less annoying than refusing the click outright. */
   const toggle = (ticker: string) =>
     setSelected((prev) =>
-      prev.includes(ticker) ? prev.filter((s) => s !== ticker) : [...prev, ticker],
+      prev.includes(ticker)
+        ? prev.filter((s) => s !== ticker)
+        : [...prev, ticker].slice(-COMPARE_SIZE),
     );
-  const canCompare = selected.length >= 2 && selected.length <= 4;
+  const canCompare = selected.length === COMPARE_SIZE;
 
   return (
     <aside className="shrink-0 border-b border-line bg-card md:sticky md:top-0 md:h-screen md:w-60 md:border-r md:border-b-0">
@@ -96,7 +103,7 @@ export function HistorySidebar() {
                 className="w-full rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 ⚖️ {t.compareCta}
-                {selected.length > 0 ? ` (${selected.length})` : ""}
+                {selected.length > 0 ? ` (${selected.length}/${COMPARE_SIZE})` : ""}
               </button>
               <p className="mt-1.5 text-[11px] leading-snug text-muted">
                 {t.compareSelectHint}

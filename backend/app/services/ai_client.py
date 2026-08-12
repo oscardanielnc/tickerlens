@@ -46,7 +46,7 @@ async def stream_completion(
     """Yield content deltas from a streaming chat completion."""
     settings = get_settings()
     payload = _request_payload(
-        prompt, system, model or settings.ai_model_strong, temperature, stream=True
+        prompt, system, model or settings.ai_model_narrative, temperature, stream=True
     )
     async with httpx.AsyncClient(timeout=httpx.Timeout(120, connect=10)) as client:
         async with client.stream(

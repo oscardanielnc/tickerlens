@@ -2,78 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { StreamedMarkdown } from "@/components/ai/StreamedMarkdown";
 import { ApiError, streamAiNarrative, type Fact } from "@/lib/api";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-
-/** Render inline text with **bold** and [F1]/[N2] citation markers. */
-function Inline({ text, facts }: { text: string; facts: Map<string, Fact> }) {
-  const parts = text.split(/(\*\*[^*]+\*\*|\[[FN]\d+\])/g);
-  return (
-    <>
-      {parts.map((part, i) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return (
-            <strong key={i} className="font-semibold text-foreground">
-              {part.slice(2, -2)}
-            </strong>
-          );
-        }
-        const marker = part.match(/^\[([FN]\d+)\]$/);
-        if (marker) {
-          const fact = facts.get(marker[1]);
-          const chip = (
-            <sup
-              className="mx-0.5 rounded bg-soft px-1 py-0.5 text-[10px] font-medium text-accent"
-              title={fact?.text}
-            >
-              {marker[1]}
-            </sup>
-          );
-          return fact?.source_url ? (
-            <a key={i} href={fact.source_url} target="_blank" rel="noopener noreferrer">
-              {chip}
-            </a>
-          ) : (
-            <span key={i}>{chip}</span>
-          );
-        }
-        return <span key={i}>{part}</span>;
-      })}
-    </>
-  );
-}
-
-function Narrative({ markdown, facts }: { markdown: string; facts: Map<string, Fact> }) {
-  const blocks = markdown.split("\n").filter((line) => line.trim() !== "");
-  return (
-    <div className="space-y-2 text-sm leading-relaxed text-foreground/90">
-      {blocks.map((line, i) => {
-        if (line.startsWith("## ")) {
-          return (
-            <h3 key={i} className="pt-2 text-base font-semibold text-foreground">
-              {line.slice(3)}
-            </h3>
-          );
-        }
-        if (/^\s*[-*] /.test(line)) {
-          return (
-            <div key={i} className="flex gap-2 pl-1">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted" />
-              <p>
-                <Inline text={line.replace(/^\s*[-*] /, "")} facts={facts} />
-              </p>
-            </div>
-          );
-        }
-        return (
-          <p key={i}>
-            <Inline text={line} facts={facts} />
-          </p>
-        );
-      })}
-    </div>
-  );
-}
 
 /** Streams one narrative per (ticker, locale); the parent remounts it via `key`. */
 export function AiNarrative({ ticker, facts }: { ticker: string; facts: Fact[] }) {
@@ -113,7 +44,14 @@ export function AiNarrative({ ticker, facts }: { ticker: string; facts: Fact[] }
         <p className="text-sm text-warning">{error}</p>
       ) : (
         <>
-          <Narrative markdown={text} facts={factMap} />
+          <StreamedMarkdown
+            markdown={text}
+            markerPattern="[FN]\d+"
+            resolve={(marker) => {
+              const fact = factMap.get(marker);
+              return fact && { text: fact.text, url: fact.source_url };
+            }}
+          />
           {status === "streaming" && (
             <span className="mt-1 inline-block h-4 w-2 animate-pulse bg-accent" />
           )}

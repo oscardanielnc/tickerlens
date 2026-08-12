@@ -97,12 +97,19 @@ const en = {
     "Your last 5 searches show up here, stored only in this browser. Compare any two of them.",
   removeLabel: "Remove",
   compareCta: "Compare",
-  compareSelectHint: "Tick 2 tickers to compare them side by side.",
-  compareTitle: "Ticker comparison",
-  compareTooFew: "Pick at least two tickers to compare, e.g. /compare?t=NVDA,AAPL",
+  compareSelectHint: "Pick exactly 2 tickers to compare them head to head.",
+  compareTitle: "Head-to-head comparison",
+  compareTooFew: "A comparison needs exactly two tickers, e.g. /compare?t=NVDA,AAPL",
   compareFailed: "Could not load",
   priceLabel: "Price",
   dayChange: "Day change",
+  verdictTitle: "AI verdict",
+  verdictHint:
+    "Retrieved from this app's own analysis index (RAG) and grounded in the cited excerpts below — a comparison of what the data shows, not advice.",
+  verdictSourcesTitle: "Retrieved excerpts used",
+  verdictError: "The verdict could not be generated right now.",
+  verdictUnavailable:
+    "The retrieval index is not available, so no verdict can be generated. The comparison table above is unaffected.",
 };
 
 export type Dictionary = { [K in keyof typeof en]: string };
@@ -203,12 +210,19 @@ const es: Dictionary = {
     "Tus últimas 5 búsquedas aparecen aquí, guardadas solo en este navegador. Puedes comparar dos de ellas.",
   removeLabel: "Quitar",
   compareCta: "Comparar",
-  compareSelectHint: "Marca 2 tickers para compararlos lado a lado.",
-  compareTitle: "Comparativa de tickers",
-  compareTooFew: "Elige al menos dos tickers para comparar, ej. /compare?t=NVDA,AAPL",
+  compareSelectHint: "Marca exactamente 2 tickers para enfrentarlos.",
+  compareTitle: "Comparativa cara a cara",
+  compareTooFew: "La comparativa necesita exactamente dos tickers, ej. /compare?t=NVDA,AAPL",
   compareFailed: "No se pudo cargar",
   priceLabel: "Precio",
   dayChange: "Cambio del día",
+  verdictTitle: "Veredicto de la IA",
+  verdictHint:
+    "Recuperado del índice de análisis de esta app (RAG) y fundamentado en los extractos citados abajo — es una comparación de lo que muestran los datos, no un consejo.",
+  verdictSourcesTitle: "Extractos recuperados que se usaron",
+  verdictError: "No se pudo generar el veredicto en este momento.",
+  verdictUnavailable:
+    "El índice de recuperación no está disponible, así que no se puede generar el veredicto. La tabla comparativa de arriba no se ve afectada.",
 };
 
 export const dictionaries: Record<Locale, Dictionary> = { en, es };

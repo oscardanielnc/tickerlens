@@ -30,8 +30,17 @@ class Settings(BaseSettings):
     ai_engine: str = "deepseek"
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com"
-    ai_model_strong: str = "deepseek-chat"  # analysis synthesis (fast streaming for the demo)
-    ai_model_cheap: str = "deepseek-chat"  # translations, short summaries
+    # Named by role, not by "strong"/"cheap": the verdict has to weigh two
+    # companies against each other and justify a pick, which is a harder job than
+    # narrating one. Named models explicitly rather than the "deepseek-chat"
+    # alias, so an upstream rename cannot silently swap the model under us.
+    ai_model_verdict: str = "deepseek-v4-pro"  # comparative verdict
+    ai_model_narrative: str = "deepseek-v4-flash"  # per-ticker narrative, fast streaming
+
+    # RAG / retrieval
+    embedding_model: str = "BAAI/bge-small-en-v1.5"  # 384 dims; see EMBED_DIM
+    embedding_cache_dir: str = "/tmp/fastembed"
+    rag_chunks_per_ticker: int = 6  # retrieval budget per side of a comparison
 
     # Cache freshness (seconds) — protects provider rate limits and AI spend
     cache_ttl_quote: int = 60

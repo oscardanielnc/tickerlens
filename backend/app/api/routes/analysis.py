@@ -21,6 +21,7 @@ from app.providers.alpaca import AlpacaProvider
 from app.providers.base import Candle, CompanyProfile, EarningsEvent, NewsItem, Quote
 from app.providers.edgar import EdgarProvider, Fundamentals
 from app.providers.finnhub import FinnhubProvider, ValuationMetrics
+from app.services import rag, verdict
 from app.services.ai_client import stream_completion
 from app.services.levels import LevelsResult, compute_levels
 from app.services.synthesis import Fact, build_facts, build_prompt
@@ -85,6 +86,11 @@ async def _build_analysis(ticker: str) -> AnalysisPayload:
         quote, profile, technical, levels, earnings, news, fundamentals, valuation
     )
 
+    # Feed the retrieval index. Awaited rather than fired off as a background
+    # task so a comparison requested right after an analysis finds the documents
+    # already there; it only runs on a cache miss, and never raises.
+    await rag.index_analysis(ticker, facts, news)
+
     return AnalysisPayload(
         ticker=ticker,
         quote=quote,
@@ -114,6 +120,15 @@ async def get_analysis(request: Request, response: Response, ticker: str) -> Ana
     return await _cached_analysis(_validate(ticker))
 
 
+def _sse(stream) -> StreamingResponse:
+    return StreamingResponse(
+        stream,
+        media_type="text/event-stream",
+        # X-Accel-Buffering keeps the reverse proxy from holding the tokens back.
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 @router.get("/analysis/{ticker}/ai")
 @limiter.limit(settings.rate_limit_analysis)
 async def stream_ai_narrative(
@@ -132,8 +147,54 @@ async def stream_ai_narrative(
         except HTTPException as exc:
             yield f"data: {json.dumps({'error': exc.detail})}\n\n"
 
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    return _sse(event_stream())
+
+
+@router.get("/compare/verdict")
+@limiter.limit(settings.rate_limit_analysis)
+async def stream_compare_verdict(
+    request: Request,
+    a: str = Query(..., description="first ticker"),
+    b: str = Query(..., description="second ticker"),
+    lang: str = Query("en", pattern="^(en|es)$"),
+) -> StreamingResponse:
+    """RAG comparison of exactly two tickers, streamed.
+
+    Retrieval reads what the analysis pipeline indexed, so both analyses are
+    resolved first (cached — usually a no-op) to guarantee the index is warm
+    even when a visitor lands on /compare directly.
+    """
+    ticker_a, ticker_b = _validate(a), _validate(b)
+    if ticker_a == ticker_b:
+        raise HTTPException(status_code=422, detail="Pick two different tickers")
+
+    await _cached_analysis(ticker_a)
+    await _cached_analysis(ticker_b)
+
+    chunks = await rag.retrieve_for_pair(
+        verdict.retrieval_query(ticker_a, ticker_b),
+        (ticker_a, ticker_b),
+        per_ticker=settings.rag_chunks_per_ticker,
     )
+    if not chunks:
+        raise HTTPException(status_code=503, detail="Retrieval index is unavailable")
+
+    prompt, system = verdict.build_prompt(ticker_a, ticker_b, chunks, lang)
+
+    async def event_stream():
+        # Sources first, so the UI can render the citation list while tokens stream.
+        sources = [
+            {"ref": f"{c.ticker}/{c.ref}", "text": c.text, "source_url": c.source_url}
+            for c in chunks
+        ]
+        yield f"data: {json.dumps({'sources': sources})}\n\n"
+        try:
+            async for delta in stream_completion(
+                prompt, system, model=settings.ai_model_verdict
+            ):
+                yield f"data: {json.dumps({'delta': delta})}\n\n"
+            yield "data: [DONE]\n\n"
+        except HTTPException as exc:
+            yield f"data: {json.dumps({'error': exc.detail})}\n\n"
+
+    return _sse(event_stream())

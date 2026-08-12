@@ -1,13 +1,35 @@
 # Public demo stack (single entry point on :8081 — nginx serves the app and
 # forwards /api to the backend, so the browser only ever talks to one origin).
-# Postgres is intentionally absent: nothing uses it until the RAG phase.
 services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tickerlens
+      # No default: compose fails loudly if it is missing from .env rather than
+      # starting the RAG store with a guessable password.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: tickerlens
+    # Not published: only the backend needs it, over the compose network.
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tickerlens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build: ./backend
     restart: unless-stopped
     env_file: .env
     environment:
       ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://tickerlens:${POSTGRES_PASSWORD}@db:5432/tickerlens
+      # Persisted so a container restart does not re-download the ONNX weights.
+      EMBEDDING_CACHE_DIR: /models
     # --proxy-headers makes uvicorn trust X-Forwarded-For from nginx, so the
     # per-IP rate limit counts real visitors instead of the proxy. The trusted
     # set is the compose network only (never "*", which would trust the header
@@ -21,6 +43,11 @@ services:
       - --forwarded-allow-ips=172.31.240.0/24
     expose:
       - "8000"
+    volumes:
+      - models:/models
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -41,6 +68,10 @@ services:
     depends_on:
       - backend
       - frontend
+
+volumes:
+  pgdata:
+  models: # ONNX embedding weights, ~130MB
 
 # Pinned subnet so --forwarded-allow-ips above can name it. Without this Docker
 # assigns a random 172.x range and the trusted set would drift on recreate.

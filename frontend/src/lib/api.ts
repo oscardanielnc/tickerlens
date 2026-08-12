@@ -163,17 +163,27 @@ export async function fetchAnalysis(ticker: string): Promise<AnalysisPayload> {
   return response.json();
 }
 
-/** Stream the AI narrative over SSE, invoking onDelta per token chunk. */
-export async function streamAiNarrative(
-  ticker: string,
-  lang: string,
-  onDelta: (text: string) => void,
-  signal?: AbortSignal,
-): Promise<void> {
-  const response = await fetch(
-    `${API_URL}/api/analysis/${encodeURIComponent(ticker)}/ai?lang=${lang}`,
-    { signal },
-  );
+/** One retrieved chunk the verdict was grounded in. `ref` is "TICKER/F3". */
+export interface RetrievedSource {
+  ref: string;
+  text: string;
+  source_url: string | null;
+}
+
+interface SseHandlers {
+  onDelta: (text: string) => void;
+  onSources?: (sources: RetrievedSource[]) => void;
+}
+
+/**
+ * Consume one of the backend's SSE endpoints.
+ *
+ * Frames are split on the blank-line delimiter and the trailing partial frame is
+ * kept in the buffer — a token chunk can be cut mid-frame by the network, and
+ * parsing what arrived would drop it.
+ */
+async function consumeSse(url: string, handlers: SseHandlers, signal?: AbortSignal) {
+  const response = await fetch(url, { signal });
   if (!response.ok || !response.body) {
     throw new ApiError(response.status, "AI stream failed");
   }
@@ -193,10 +203,40 @@ export async function streamAiNarrative(
       try {
         const parsed = JSON.parse(data);
         if (parsed.error) throw new ApiError(502, parsed.error);
-        if (parsed.delta) onDelta(parsed.delta);
+        if (parsed.sources) handlers.onSources?.(parsed.sources);
+        if (parsed.delta) handlers.onDelta(parsed.delta);
       } catch (err) {
         if (err instanceof ApiError) throw err;
       }
     }
   }
+}
+
+/** Stream the AI narrative over SSE, invoking onDelta per token chunk. */
+export async function streamAiNarrative(
+  ticker: string,
+  lang: string,
+  onDelta: (text: string) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  await consumeSse(
+    `${API_URL}/api/analysis/${encodeURIComponent(ticker)}/ai?lang=${lang}`,
+    { onDelta },
+    signal,
+  );
+}
+
+/**
+ * Stream the RAG comparison of two tickers. The backend emits the retrieved
+ * excerpts as the first frame, then the verdict tokens.
+ */
+export async function streamCompareVerdict(
+  tickerA: string,
+  tickerB: string,
+  lang: string,
+  handlers: SseHandlers,
+  signal?: AbortSignal,
+): Promise<void> {
+  const query = new URLSearchParams({ a: tickerA, b: tickerB, lang });
+  await consumeSse(`${API_URL}/api/compare/verdict?${query}`, handlers, signal);
 }

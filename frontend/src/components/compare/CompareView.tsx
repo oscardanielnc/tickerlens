@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { VerdictPanel } from "@/components/compare/VerdictPanel";
 import { fetchAnalysis, type AnalysisPayload } from "@/lib/api";
 import { formatMarketCap } from "@/lib/format";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -60,7 +61,7 @@ export function CompareView({ tickers }: { tickers: string[] }) {
   const [results, setResults] = useState<LoadResult[] | null>(null);
 
   useEffect(() => {
-    if (tickers.length < 2) return;
+    if (tickers.length !== 2) return;
     let cancelled = false;
     Promise.all(
       tickers.map((ticker) =>
@@ -143,7 +144,7 @@ export function CompareView({ tickers }: { tickers: string[] }) {
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-6">
         <h1 className="text-2xl font-bold">⚖️ {t.compareTitle}</h1>
 
-        {tickers.length < 2 && (
+        {tickers.length !== 2 && (
           <div className="rounded-xl border border-[#f0dcb4] bg-[#fbf0d8] p-6 text-center">
             <p className="text-warning">{t.compareTooFew}</p>
             <Link href="/" className="mt-2 inline-block text-sm text-muted underline">
@@ -152,7 +153,7 @@ export function CompareView({ tickers }: { tickers: string[] }) {
           </div>
         )}
 
-        {tickers.length >= 2 && !results && (
+        {tickers.length === 2 && !results && (
           <div className="flex flex-col items-center gap-3 py-24 text-muted">
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
             {t.loading}
@@ -201,6 +202,12 @@ export function CompareView({ tickers }: { tickers: string[] }) {
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* Only worth asking for a verdict once both sides actually loaded —
+            the AI cannot compare against a ticker that failed to fetch. */}
+        {loaded.length === 2 && (
+          <VerdictPanel tickerA={loaded[0].ticker} tickerB={loaded[1].ticker} />
         )}
       </main>
 
