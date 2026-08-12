@@ -21,7 +21,10 @@ facts (F*) and news (N*) for both companies. They are the only evidence you have
 
 Rules, in order of priority:
 1. Use ONLY the numbered excerpts provided. Never invent numbers, events or dates. \
-If the evidence for one company is thinner, say so rather than filling the gap.
+If a metric is present for one company and absent for the other, say it is not \
+available and do not compare on that dimension — a missing excerpt is a gap in \
+the retrieved context, NOT a weakness of that company, and must never count \
+against it.
 2. Cite every factual claim with its reference, e.g. [{a}/F3] or [{b}/N2] — always \
 prefix with the ticker, because both companies use the same F/N numbering.
 3. You MUST commit to one of the two as the stronger candidate on this evidence. \

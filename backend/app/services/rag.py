@@ -99,11 +99,22 @@ async def index_analysis(ticker: str, facts: list[Fact], news: list[NewsItem]) -
 async def retrieve_for_pair(
     query: str, tickers: tuple[str, str], per_ticker: int = 6
 ) -> list[Chunk]:
-    """Top-k chunks for `query`, retrieved per ticker rather than globally.
+    """Retrieve context for a comparison, symmetrically across both tickers.
 
-    A single global top-k would happily return 12 chunks about the more heavily
-    covered company and none about the other, which is useless for a comparison:
-    the prompt needs evidence on both sides. So the budget is split per ticker.
+    Plain top-k per ticker is not good enough here, and the failure is worse than
+    thin context: it produces confident wrong answers. Retrieving NVDA and AMD
+    independently returned AMD's valuation and margin facts but not NVDA's, and
+    the model duly concluded AMD looked stronger "because NVDA has no comparable
+    fundamentals" — while NVDA was in fact cheaper (P/E 34 vs 120) with a 71%
+    net margin. The evidence was in the index; retrieval just never asked for it.
+
+    So retrieval happens in two passes. The first finds which *dimensions* the
+    query is about, as the union of the top-k refs across both tickers. The
+    second fetches those refs for both sides. Because build_facts() emits facts
+    in a fixed order, a ref denotes the same kind of fact for every ticker —
+    F11 is the valuation line for both — so pulling the union guarantees that a
+    dimension retrieved for one company is retrieved for the other, and the model
+    compares like with like or is told the value is missing.
     """
     pool = db.pool()
     if pool is None:
@@ -111,34 +122,49 @@ async def retrieve_for_pair(
 
     try:
         vector = await embed_query(query)
-        chunks: list[Chunk] = []
         async with pool.acquire() as connection:
+            refs: set[str] = set()
             for ticker in tickers:
                 rows = await connection.fetch(
                     """
-                    SELECT ticker, kind, ref, text, source_url,
-                           embedding <=> $1 AS distance
+                    SELECT ref
                       FROM documents
                      WHERE ticker = $2
-                     ORDER BY distance
+                     ORDER BY embedding <=> $1
                      LIMIT $3
                     """,
                     vector,
                     ticker,
                     per_ticker,
                 )
-                chunks += [
-                    Chunk(
-                        ticker=row["ticker"],
-                        kind=row["kind"],
-                        ref=row["ref"],
-                        text=row["text"],
-                        source_url=row["source_url"],
-                        distance=float(row["distance"]),
-                    )
-                    for row in rows
-                ]
-        return chunks
+                refs.update(row["ref"] for row in rows)
+
+            if not refs:
+                return []
+
+            rows = await connection.fetch(
+                """
+                SELECT ticker, kind, ref, text, source_url,
+                       embedding <=> $1 AS distance
+                  FROM documents
+                 WHERE ticker = ANY($2) AND ref = ANY($3)
+                 ORDER BY ticker, distance
+                """,
+                vector,
+                list(tickers),
+                list(refs),
+            )
+        return [
+            Chunk(
+                ticker=row["ticker"],
+                kind=row["kind"],
+                ref=row["ref"],
+                text=row["text"],
+                source_url=row["source_url"],
+                distance=float(row["distance"]),
+            )
+            for row in rows
+        ]
     except Exception:
         logger.exception("Retrieval failed for %s", tickers)
         return []
