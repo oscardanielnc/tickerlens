@@ -1,0 +1,51 @@
+# Public demo stack (single entry point on :8081 — nginx serves the app and
+# forwards /api to the backend, so the browser only ever talks to one origin).
+# Postgres is intentionally absent: nothing uses it until the RAG phase.
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ENVIRONMENT: production
+    # --proxy-headers makes uvicorn trust X-Forwarded-For from nginx, so the
+    # per-IP rate limit counts real visitors instead of the proxy. The trusted
+    # set is the compose network only (never "*", which would trust the header
+    # from any peer and let a visitor forge their rate-limit identity).
+    command:
+      - uvicorn
+      - app.main:app
+      - --host=0.0.0.0
+      - --port=8000
+      - --proxy-headers
+      - --forwarded-allow-ips=172.31.240.0/24
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: "" # same-origin: calls go to /api/... through nginx
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+      - frontend
+
+# Pinned subnet so --forwarded-allow-ips above can name it. Without this Docker
+# assigns a random 172.x range and the trusted set would drift on recreate.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.31.240.0/24

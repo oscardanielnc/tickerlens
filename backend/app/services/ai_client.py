@@ -5,12 +5,15 @@ changing DEEPSEEK_BASE_URL / model names in settings.
 """
 
 import json
+import logging
 from collections.abc import AsyncIterator
 
 import httpx
 from fastapi import HTTPException
 
 from app.core.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 def _request_payload(
@@ -53,8 +56,13 @@ async def stream_completion(
             headers=_auth_headers(),
         ) as response:
             if response.status_code != 200:
-                detail = (await response.aread()).decode(errors="replace")[:500]
-                raise HTTPException(status_code=502, detail=f"AI engine error: {detail}")
+                # The upstream body can carry account, quota and request detail;
+                # it belongs in our logs, not in a response any visitor can read.
+                body = (await response.aread()).decode(errors="replace")[:500]
+                logger.error(
+                    "AI engine returned %s: %s", response.status_code, body
+                )
+                raise HTTPException(status_code=502, detail="AI engine error")
             async for line in response.aiter_lines():
                 if not line.startswith("data: "):
                     continue

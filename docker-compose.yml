@@ -5,8 +5,10 @@ services:
       POSTGRES_USER: tickerlens
       POSTGRES_PASSWORD: tickerlens
       POSTGRES_DB: tickerlens
+    # Loopback only: the password below is a well-known dev default, so the port
+    # must not be reachable from the network. Prod has no db service at all.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
