@@ -71,6 +71,14 @@ async def connect() -> None:
             _dsn(), min_size=1, max_size=4, timeout=10, init=_init_connection
         )
         logger.info("Vector store ready (pgvector, %s dims)", EMBED_DIM)
+    except ValueError:
+        # asyncpg raises a cryptic int() error when the DSN has an unescaped "/",
+        # "+" or ":" in the password — the usual cause is a base64 secret.
+        logger.exception(
+            "DATABASE_URL could not be parsed — retrieval disabled. If the password "
+            "was generated with base64, regenerate it as hex or percent-encode it."
+        )
+        _pool = None
     except Exception:
         logger.exception("Vector store unavailable — retrieval features are disabled")
         _pool = None
