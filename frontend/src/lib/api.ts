@@ -37,7 +37,7 @@ export interface TechnicalSnapshot {
   price: number;
   change_percent_day: number;
   ema20: number;
-  ema50: number;
+  ema50: number | null;
   ema150: number | null;
   ema200: number | null;
   rsi14: number;

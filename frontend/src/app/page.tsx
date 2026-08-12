@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { LanguageSwitch } from "@/components/LanguageSwitch";
-import { SavedTickers } from "@/components/SavedTickers";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function Home() {
@@ -14,18 +13,15 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-6 py-4">
-        <span className="text-lg font-semibold tracking-tight">
-          Ticker<span className="text-accent">Lens</span>
-        </span>
+      <header className="flex items-center justify-end px-6 py-4">
         <LanguageSwitch />
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-        <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-16 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           Ticker<span className="text-accent">Lens</span>
         </h1>
-        <p className="max-w-xl text-lg text-muted">{t.tagline}</p>
+        <p className="max-w-md text-balance text-muted">{t.tagline}</p>
 
         <form
           className="flex w-full max-w-md gap-2"
@@ -48,8 +44,6 @@ export default function Home() {
             {t.searchButton}
           </button>
         </form>
-
-        <SavedTickers />
       </main>
 
       <footer className="px-6 py-4 text-center text-xs text-muted">

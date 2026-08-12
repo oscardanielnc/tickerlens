@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { HistorySidebar } from "@/components/HistorySidebar";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 
 const geistSans = Geist({
@@ -32,8 +33,11 @@ export default function RootLayout({
     >
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject
           attributes into <body> before React hydrates, which is harmless */}
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <LanguageProvider>{children}</LanguageProvider>
+      <body className="flex min-h-full flex-col md:flex-row" suppressHydrationWarning>
+        <LanguageProvider>
+          <HistorySidebar />
+          <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+        </LanguageProvider>
       </body>
     </html>
   );

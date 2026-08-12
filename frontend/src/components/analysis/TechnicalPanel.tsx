@@ -75,7 +75,7 @@ export function TechnicalPanel({ technical }: { technical: TechnicalSnapshot }) 
         />
         <Tile
           label="EMA 20 / 50 / 200"
-          value={`${technical.ema20.toFixed(0)} / ${technical.ema50.toFixed(0)} / ${technical.ema200?.toFixed(0) ?? "—"}`}
+          value={`${technical.ema20.toFixed(0)} / ${technical.ema50?.toFixed(0) ?? "—"} / ${technical.ema200?.toFixed(0) ?? "—"}`}
         />
         <Tile label={t.volume} value={volLabel} detail={`ATR ${technical.atr14.toFixed(2)}`} />
         <Tile

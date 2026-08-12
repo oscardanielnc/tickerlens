@@ -23,6 +23,9 @@ const KEY = "tickerlens.saved";
 const EVENT = "tickerlens:saved-changed";
 const EMPTY: SavedTicker[] = [];
 
+/** The sidebar keeps only the last few searches — oldest entries drop off. */
+export const HISTORY_LIMIT = 5;
+
 let cache: SavedTicker[] = EMPTY;
 let cacheRaw: string | null = null;
 
@@ -60,8 +63,11 @@ export function snapshotFrom(data: AnalysisPayload): SavedTicker {
   };
 }
 
+/** Push a search to the front of the history (deduplicated, capped). */
 export function saveTicker(entry: SavedTicker): void {
-  write([entry, ...read().filter((s) => s.ticker !== entry.ticker)]);
+  write(
+    [entry, ...read().filter((s) => s.ticker !== entry.ticker)].slice(0, HISTORY_LIMIT),
+  );
 }
 
 export function removeTicker(ticker: string): void {

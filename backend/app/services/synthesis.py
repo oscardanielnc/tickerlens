@@ -89,7 +89,8 @@ def build_facts(
         f"{profile.name} ({quote.ticker}) trades on {profile.exchange}, "
         f"sector: {profile.sector or 'n/a'}, market cap ${(profile.market_cap or 0) / 1e9:.0f}B.",
         f"Current price ${technical.price} ({technical.change_percent_day:+.2f}% today).",
-        f"Trend: {technical.trend}; price vs EMA20 ${technical.ema20} / EMA50 ${technical.ema50}"
+        f"Trend: {technical.trend}; price vs EMA20 ${technical.ema20}"
+        + (f" / EMA50 ${technical.ema50}" if technical.ema50 else "")
         + (f" / EMA200 ${technical.ema200}." if technical.ema200 else "."),
         f"RSI(14) is {technical.rsi14} ({technical.rsi_state}); MACD is {technical.macd_state}"
         f" ({technical.macd_cross.replace('_', ' ')}); volume is {technical.volume_state}.",

@@ -16,27 +16,8 @@ import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { ApiError, fetchAnalysis, type AnalysisPayload } from "@/lib/api";
 import { formatMarketCap } from "@/lib/format";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { removeTicker, saveTicker, snapshotFrom, useSavedTickers } from "@/lib/storage";
+import { saveTicker, snapshotFrom } from "@/lib/storage";
 import { SEMANTIC } from "@/lib/theme";
-
-function SaveButton({ data }: { data: AnalysisPayload }) {
-  const { t } = useLanguage();
-  const saved = useSavedTickers();
-  const isSaved = saved.some((s) => s.ticker === data.ticker);
-  return (
-    <button
-      type="button"
-      onClick={() => (isSaved ? removeTicker(data.ticker) : saveTicker(snapshotFrom(data)))}
-      className={`ml-auto rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-        isSaved
-          ? "border-positive/30 bg-[#dcf3e8] text-positive"
-          : "border-line bg-card text-muted hover:border-accent hover:text-accent"
-      }`}
-    >
-      {isSaved ? `✓ ${t.savedTicker}` : `💾 ${t.saveTicker}`}
-    </button>
-  );
-}
 
 function CompanyDataCard({ data }: { data: AnalysisPayload }) {
   const { t } = useLanguage();
@@ -96,10 +77,15 @@ export function AnalysisView({ ticker }: { ticker: string }) {
   useEffect(() => {
     let cancelled = false;
     fetchAnalysis(ticker)
-      .then((payload) => !cancelled && setData(payload))
+      .then((payload) => {
+        if (cancelled) return;
+        setData(payload);
+        saveTicker(snapshotFrom(payload)); // every search lands in the sidebar history
+      })
       .catch((err) => {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 404) setError(t.errorNotFound);
+        else if (err instanceof ApiError && err.status === 422) setError(t.errorTooYoung);
         else if (err instanceof ApiError && err.status === 429) setError(t.errorRateLimit);
         else setError(t.errorGeneric);
       });
@@ -172,7 +158,6 @@ export function AnalysisView({ ticker }: { ticker: string }) {
                 {data.quote.change_percent >= 0 ? "+" : ""}
                 {data.quote.change_percent.toFixed(2)}%
               </span>
-              <SaveButton data={data} />
             </section>
 
             <PriceChart

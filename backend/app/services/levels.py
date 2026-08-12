@@ -75,10 +75,9 @@ def compute_levels(candles: list[Candle], max_per_side: int = 4) -> LevelsResult
     for k, tag in ((3, "swing_minor"), (7, "swing_major")):
         candidates += [(p, f"{tag}_low") for p in _swing_points(lows, k, find_low=True)]
         candidates += [(p, f"{tag}_high") for p in _swing_points(highs, k, find_low=False)]
-    candidates += [
-        (float(ema(close, 20).iloc[-1]), "ema20"),
-        (float(ema(close, 50).iloc[-1]), "ema50"),
-    ]
+    candidates += [(float(ema(close, 20).iloc[-1]), "ema20")]
+    if len(close) >= 50:
+        candidates += [(float(ema(close, 50).iloc[-1]), "ema50")]
     if len(close) >= 200:
         candidates += [(float(close.rolling(200).mean().iloc[-1]), "sma200")]
     candidates += [

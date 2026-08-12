@@ -47,6 +47,11 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, length: int = 14) -> 
     return rma(tr, length)
 
 
+# Bollinger bands and the volume average need 20 bars; below ~30 the RSI/MACD
+# seeds are still too green to mean anything. Recent IPOs land here.
+MIN_BARS = 30
+
+
 class TrendTemplate(BaseModel):
     """Minervini's 8-condition Trend Template (stage-2 uptrend checklist)."""
 
@@ -59,7 +64,7 @@ class TechnicalSnapshot(BaseModel):
     price: float
     change_percent_day: float
     ema20: float
-    ema50: float
+    ema50: float | None
     ema150: float | None
     ema200: float | None
     rsi14: float
@@ -106,10 +111,14 @@ def compute_technical(
     df = candles_to_df(candles)
     close, high, low, vol = df["close"], df["high"], df["low"], df["volume"]
     bars = len(df)
-    if bars < 60:
-        raise ValueError(f"Not enough history to compute indicators ({bars} bars, need 60+)")
+    if bars < MIN_BARS:
+        raise ValueError(
+            f"Not enough history to compute indicators ({bars} bars, need {MIN_BARS}+)"
+        )
 
-    ema20, ema50 = ema(close, 20), ema(close, 50)
+    # Long averages stay None until there is enough history to make them real.
+    ema20 = ema(close, 20)
+    ema50 = ema(close, 50) if bars >= 50 else None
     ema150 = ema(close, 150) if bars >= 150 else None
     ema200 = ema(close, 200) if bars >= 200 else None
     rsi14 = rsi(close)
@@ -119,7 +128,8 @@ def compute_technical(
 
     px = float(close.iloc[-1])
     px_prev = float(close.iloc[-2])
-    e20, e50 = float(ema20.iloc[-1]), float(ema50.iloc[-1])
+    e20 = float(ema20.iloc[-1])
+    e50 = float(ema50.iloc[-1]) if ema50 is not None else None
     e150 = float(ema150.iloc[-1]) if ema150 is not None else None
     e200 = float(ema200.iloc[-1]) if ema200 is not None else None
     r = float(rsi14.iloc[-1])
@@ -137,10 +147,10 @@ def compute_technical(
     rs_spy = _relative_strength_vs_spy(close, spy_close)
 
     checks: dict[str, bool | None] = {
-        "price_above_ema50": px > e50,
+        "price_above_ema50": px > e50 if e50 else None,
         "price_above_ema150": px > e150 if e150 else None,
         "price_above_ema200": px > e200 if e200 else None,
-        "ema50_above_ema150": e50 > e150 if e150 else None,
+        "ema50_above_ema150": (e50 > e150) if (e50 and e150) else None,
         "ema150_above_ema200": (e150 > e200) if (e150 and e200) else None,
         "ema200_rising": ema200_rising,
         "within_25pct_of_52w_high": dist_52w >= -25,
@@ -154,7 +164,7 @@ def compute_technical(
         price=round(px, 4),
         change_percent_day=round((px - px_prev) / px_prev * 100, 2),
         ema20=round(e20, 2),
-        ema50=round(e50, 2),
+        ema50=round(e50, 2) if e50 else None,
         ema150=round(e150, 2) if e150 else None,
         ema200=round(e200, 2) if e200 else None,
         rsi14=round(r, 1),
@@ -173,7 +183,10 @@ def compute_technical(
         bollinger_lower=round(float(bb_lower.iloc[-1]), 2),
         atr14=round(float(atr14.iloc[-1]), 2),
         trend=(
-            "uptrend" if px > e20 > e50 else "downtrend" if px < e20 < e50 else "sideways"
+            # Without an EMA50 (young listing) the price vs EMA20 stack is all we have.
+            ("uptrend" if px > e20 > e50 else "downtrend" if px < e20 < e50 else "sideways")
+            if e50
+            else ("uptrend" if px > e20 else "downtrend")
         ),
         volume_state=(
             "high" if vol_cur > vol_avg * 1.3 else "low" if vol_cur < vol_avg * 0.7 else "normal"

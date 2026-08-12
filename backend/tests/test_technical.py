@@ -1,9 +1,11 @@
 import math
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from app.providers.base import Candle
 from app.services.levels import compute_levels
-from app.services.technical import compute_technical
+from app.services.technical import MIN_BARS, compute_technical
 
 
 def make_candles(closes: list[float], spread: float = 1.0) -> list[Candle]:
@@ -45,10 +47,18 @@ def test_downtrend_snapshot() -> None:
 
 
 def test_insufficient_history_raises() -> None:
-    import pytest
-
     with pytest.raises(ValueError):
-        compute_technical(make_candles([100.0] * 30))
+        compute_technical(make_candles([100.0] * (MIN_BARS - 1)))
+
+
+def test_young_listing_omits_long_emas() -> None:
+    """A recent IPO clears MIN_BARS but has no EMA50/150/200 to speak of."""
+    closes = [100 + i * 0.5 for i in range(40)]
+    snapshot = compute_technical(make_candles(closes))
+    assert snapshot.ema50 is None
+    assert snapshot.ema150 is None and snapshot.ema200 is None
+    assert snapshot.trend == "uptrend"  # falls back to price vs EMA20
+    assert snapshot.trend_template.checks["price_above_ema50"] is None
 
 
 def test_levels_split_by_price() -> None:
