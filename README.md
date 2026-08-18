@@ -8,7 +8,7 @@ bull/bear case where every statement points to the data or article it came from.
 tickers and a RAG pipeline retrieves the most relevant evidence about both and streams a
 head-to-head verdict grounded in it.
 
-**▶ Live demo: [213.35.121.9:8081](https://tickerlens.oscarnavarro.dev)** — running on my own API keys, so it is rate-limited per visitor.
+**▶ Live demo: [tickerlens.oscarnavarro.dev](https://tickerlens.oscarnavarro.dev)** — running on my own API keys, so it is rate-limited per visitor.
 
 > ⚠️ **Not financial advice.** TickerLens is an educational and research tool. All signals,
 > levels and AI-generated commentary are informational only.
